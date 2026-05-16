@@ -1,0 +1,27 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Built CLI (Makefile `build` target)
+/tl
+
+# Cross-platform build & release artifacts
+/build/
+/tl-*.tar.gz
+/tl-*.zip
+
+# Test binary, built with `go test -c`
+*.test
+
+# Go coverage output
+*.out
+
+# Go workspace file
+go.work
+
+# Agent local files
+.codex
+.claude
