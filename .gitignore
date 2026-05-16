@@ -22,6 +22,9 @@
 # Go workspace file
 go.work
 
+# Ledger local state (test artifacts)
+.taskledger/
+
 # Agent local files
 .codex
 .claude
