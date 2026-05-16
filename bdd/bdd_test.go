@@ -105,6 +105,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the new task description is "([^"]*)"$`, w.newTaskDescriptionIs)
 	ctx.Step(`^an event "([^"]*)" is recorded for the new task$`, w.eventRecordedForNewTask)
 	ctx.Step(`^the JSON output body contains "([^"]*)"$`, w.jsonBodyContains)
+	ctx.Step(`^the output reports that the priority is invalid$`, w.outputReportsPriorityInvalid)
 
 	// list.feature preconditions and outcomes
 	ctx.Step(`^the following tasks exist:$`, w.followingTasksExist)
@@ -118,6 +119,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^"([^"]*)" depends on "([^"]*)"$`, w.taskDependsOn)
 	ctx.Step(`^"([^"]*)" has a note from "([^"]*)" saying "([^"]*)"$`, w.taskHasNote)
 	ctx.Step(`^no task with identifier "([^"]*)" exists$`, w.noTaskWithIdentifierExists)
+
+	// dep-add.feature preconditions and outcomes
+	ctx.Step(`^a task "([^"]*)" with no dependencies$`, w.taskWithNoDependencies)
+	ctx.Step(`^a task "([^"]*)" exists$`, w.taskExists)
+	ctx.Step(`^an event "([^"]*)" is recorded for "([^"]*)"$`, w.eventRecordedFor)
+	ctx.Step(`^"([^"]*)" has no dependencies$`, w.taskHasNoDependencies)
 	ctx.Step(`^the output contains identifier "([^"]*)"$`, w.outputContains)
 	ctx.Step(`^the output contains title "([^"]*)"$`, w.outputContains)
 	ctx.Step(`^the output contains status "([^"]*)"$`, w.outputContains)
@@ -318,6 +325,17 @@ func (w *world) newTaskDescriptionIs(desc string) error {
 	return nil
 }
 
+func (w *world) outputReportsPriorityInvalid() error {
+	combined := strings.ToLower(w.stdout.String() + w.stderr.String())
+	if w.cmdErr != nil {
+		combined += "\n" + strings.ToLower(w.cmdErr.Error())
+	}
+	if !strings.Contains(combined, "invalid priority") {
+		return fmt.Errorf("output does not report invalid priority; got:\n%s", combined)
+	}
+	return nil
+}
+
 func (w *world) jsonBodyContains(needle string) error {
 	body, err := w.jsonStringValue("body")
 	if err != nil {
@@ -355,6 +373,10 @@ func (w *world) eventRecordedForNewTask(eventName string) error {
 		return err
 	}
 	return assertEventRecorded(eventName, t.ID)
+}
+
+func (w *world) eventRecordedFor(eventName, taskID string) error {
+	return assertEventRecorded(eventName, taskID)
 }
 
 // --- list.feature support -------------------------------------------------
@@ -469,6 +491,28 @@ func (w *world) jsonTaskArray() ([]task.Task, error) {
 
 // --- show.feature support -------------------------------------------------
 
+func (w *world) taskWithNoDependencies(id string) error {
+	return writeFixtureTask(&task.Task{
+		ID:        id,
+		Title:     id,
+		Status:    "open",
+		Priority:  "medium",
+		CreatedAt: fixtureTime,
+		UpdatedAt: fixtureTime,
+		CreatedBy: "human",
+		DependsOn: []string{},
+		Tags:      []string{},
+		Verify: task.Verify{
+			Commands:         []string{},
+			EvidenceRequired: []string{},
+		},
+	})
+}
+
+func (w *world) taskExists(id string) error {
+	return w.taskWithNoDependencies(id)
+}
+
 func (w *world) taskWithTitleAndStatus(id, title, status string) error {
 	return writeFixtureTask(&task.Task{
 		ID:        id,
@@ -492,6 +536,13 @@ func (w *world) taskDependsOn(id, dependencyID string) error {
 	if err != nil {
 		return err
 	}
+	// If already present, treat as verification (Then step). Otherwise add
+	// it (Given setup for scenarios like show.feature and dep-add.feature).
+	for _, d := range t.DependsOn {
+		if d == dependencyID {
+			return nil
+		}
+	}
 	t.DependsOn = append(t.DependsOn, dependencyID)
 	return writeFixtureTask(t)
 }
@@ -507,6 +558,17 @@ func (w *world) taskHasNote(id, actor, message string) error {
 	}
 	t.Body += fmt.Sprintf("## Notes\n\n### %s - %s\n\n%s\n", fixtureTime.Format(time.RFC3339), actor, message)
 	return writeFixtureTask(t)
+}
+
+func (w *world) taskHasNoDependencies(id string) error {
+	t, err := loadFixtureTask(id)
+	if err != nil {
+		return err
+	}
+	if len(t.DependsOn) != 0 {
+		return fmt.Errorf("task %s has dependencies %v, expected none", id, t.DependsOn)
+	}
+	return nil
 }
 
 func (w *world) noTaskWithIdentifierExists(id string) error {

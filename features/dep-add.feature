@@ -1,3 +1,4 @@
+@implemented
 Feature: Add a dependency between tasks
   As a developer or agent
   I want to record that one task depends on another
