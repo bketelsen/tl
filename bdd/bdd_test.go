@@ -153,14 +153,21 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^a ready task "([^"]*)" titled "([^"]*)"$`, w.readyTaskTitled)
 	ctx.Step(`^a ready task "([^"]*)"$`, w.readyTask)
 	ctx.Step(`^a task "([^"]*)" claimed by "([^"]*)" with an active lease$`, w.taskClaimedByWithActiveLease)
+	ctx.Step(`^a task "([^"]*)" claimed by "([^"]*)"$`, w.taskClaimedByWithActiveLease)
 	ctx.Step(`^a task "([^"]*)" with status "([^"]*)"$`, w.taskWithStatus)
 
 	// claim.feature outcomes
 	ctx.Step(`^"([^"]*)" is claimed by "([^"]*)"$`, w.taskIsClaimedBy)
 	ctx.Step(`^"([^"]*)" is still claimed by "([^"]*)"$`, w.taskIsClaimedBy)
 	ctx.Step(`^"([^"]*)" has status "([^"]*)"$`, w.taskHasSpecificStatus)
+	ctx.Step(`^"([^"]*)" still has status "([^"]*)"$`, w.taskHasSpecificStatus)
 	ctx.Step(`^"([^"]*)" has a non-empty claim expiry$`, w.taskHasNonEmptyClaimExpiry)
 	ctx.Step(`^"([^"]*)" is not claimed$`, w.taskIsNotClaimed)
+	ctx.Step(`^"([^"]*)" was closed by "([^"]*)"$`, w.taskWasClosedBy)
+	ctx.Step(`^"([^"]*)" does not have status "([^"]*)"$`, w.taskDoesNotHaveStatus)
+	ctx.Step(`^the command reports the task is blocked$`, w.outputReportsTaskBlocked)
+	ctx.Step(`^the command reports the claim is held by a different actor$`, w.outputReportsClaimHeldByDifferentActor)
+	ctx.Step(`^the command reports the task is already closed$`, w.outputReportsTaskAlreadyClosed)
 	ctx.Step(`^the JSON output contains actor "([^"]*)"$`, w.jsonClaimActor)
 	ctx.Step(`^the JSON output contains a claim expiry (\d+) minutes after the claim time$`, w.jsonClaimExpiryAfter)
 
@@ -454,10 +461,6 @@ func (w *world) followingTasksExist(table *godog.Table) error {
 			CreatedBy: "human",
 			DependsOn: []string{},
 			Tags:      []string{},
-			Verify: task.Verify{
-				Commands:         []string{},
-				EvidenceRequired: []string{},
-			},
 		}); err != nil {
 			return err
 		}
@@ -543,10 +546,6 @@ func (w *world) taskWithNoDependencies(id string) error {
 		CreatedBy: "human",
 		DependsOn: []string{},
 		Tags:      []string{},
-		Verify: task.Verify{
-			Commands:         []string{},
-			EvidenceRequired: []string{},
-		},
 	})
 }
 
@@ -565,10 +564,6 @@ func (w *world) taskWithTitleAndStatus(id, title, status string) error {
 		CreatedBy: "human",
 		DependsOn: []string{},
 		Tags:      []string{},
-		Verify: task.Verify{
-			Commands:         []string{},
-			EvidenceRequired: []string{},
-		},
 	})
 }
 
@@ -577,7 +572,7 @@ func (w *world) taskDependsOn(id, dependencyID string) error {
 	if err != nil {
 		return err
 	}
-	// If already present, treat as verification (Then step). Otherwise add
+	// If already present, treat as an assertion (Then step). Otherwise add
 	// it (Given setup for scenarios like show.feature and dep-add.feature).
 	for _, d := range t.DependsOn {
 		if d == dependencyID {
@@ -626,6 +621,19 @@ func (w *world) outputContains(needle string) error {
 	}
 	if !strings.Contains(combined, needle) {
 		return fmt.Errorf("output does not contain %q; got:\n%s", needle, combined)
+	}
+	return nil
+}
+
+func (w *world) outputContainsAll(needles ...string) error {
+	combined := strings.ToLower(w.stdout.String() + w.stderr.String())
+	if w.cmdErr != nil {
+		combined += "\n" + strings.ToLower(w.cmdErr.Error())
+	}
+	for _, needle := range needles {
+		if !strings.Contains(combined, strings.ToLower(needle)) {
+			return fmt.Errorf("output does not contain %q; got:\n%s", needle, combined)
+		}
 	}
 	return nil
 }
@@ -693,10 +701,6 @@ func (w *world) readyTaskTitled(id, title string) error {
 		CreatedBy: "human",
 		DependsOn: []string{},
 		Tags:      []string{},
-		Verify: task.Verify{
-			Commands:         []string{},
-			EvidenceRequired: []string{},
-		},
 	})
 }
 
@@ -719,13 +723,10 @@ func (w *world) taskClaimedByWithActiveLease(id, actor string) error {
 		DependsOn: []string{},
 		Tags:      []string{},
 		Claim: task.Claim{
-			Actor:     &a,
-			ClaimedAt: &now,
-			ExpiresAt: &expires,
-		},
-		Verify: task.Verify{
-			Commands:         []string{},
-			EvidenceRequired: []string{},
+			Actor:       &a,
+			ClaimedAt:   &now,
+			ExpiresAt:   &expires,
+			HeartbeatAt: &now,
 		},
 	})
 }
@@ -741,10 +742,6 @@ func (w *world) taskWithStatus(id, status string) error {
 		CreatedBy: "human",
 		DependsOn: []string{},
 		Tags:      []string{},
-		Verify: task.Verify{
-			Commands:         []string{},
-			EvidenceRequired: []string{},
-		},
 	}
 	return writeFixtureTask(t)
 }
@@ -797,6 +794,33 @@ func (w *world) taskIsNotClaimed(id string) error {
 		return fmt.Errorf("task %s is claimed by %q, expected none", id, *t.Claim.Actor)
 	}
 	return nil
+}
+
+func (w *world) taskWasClosedBy(id, actor string) error {
+	return assertEventRecordedBy("closed", id, actor)
+}
+
+func (w *world) taskDoesNotHaveStatus(id, status string) error {
+	t, err := loadFixtureTask(id)
+	if err != nil {
+		return err
+	}
+	if t.Status == status {
+		return fmt.Errorf("task %s status is %q, expected a different status", id, status)
+	}
+	return nil
+}
+
+func (w *world) outputReportsTaskBlocked() error {
+	return w.outputContainsAll("blocked")
+}
+
+func (w *world) outputReportsClaimHeldByDifferentActor() error {
+	return w.outputContainsAll("claimed", "different")
+}
+
+func (w *world) outputReportsTaskAlreadyClosed() error {
+	return w.outputContainsAll("already", "closed")
 }
 
 func (w *world) jsonClaimActor(expected string) error {
@@ -892,10 +916,6 @@ func (w *world) taskWithExpiredClaim(id, actor string) error {
 			ClaimedAt:   &expired,
 			ExpiresAt:   &expired,
 			HeartbeatAt: &expired,
-		},
-		Verify: task.Verify{
-			Commands:         []string{},
-			EvidenceRequired: []string{},
 		},
 	})
 }
@@ -1119,6 +1139,14 @@ func loadFixtureTask(id string) (*task.Task, error) {
 }
 
 func assertEventRecorded(eventName, taskID string) error {
+	return assertEventRecordedMatching(eventName, taskID, "")
+}
+
+func assertEventRecordedBy(eventName, taskID, actor string) error {
+	return assertEventRecordedMatching(eventName, taskID, actor)
+}
+
+func assertEventRecordedMatching(eventName, taskID, actor string) error {
 	f, err := os.Open(filepath.Join(".taskledger", "events.jsonl"))
 	if err != nil {
 		return fmt.Errorf("open events journal: %w", err)
@@ -1134,12 +1162,15 @@ func assertEventRecorded(eventName, taskID string) error {
 		if err := json.Unmarshal(line, &e); err != nil {
 			return fmt.Errorf("parse event line %q: %w", string(line), err)
 		}
-		if e.Event == eventName && e.TaskID == taskID {
+		if e.Event == eventName && e.TaskID == taskID && (actor == "" || e.Actor == actor) {
 			return nil
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		return err
+	}
+	if actor != "" {
+		return fmt.Errorf("no %q event for %q by %q in journal", eventName, taskID, actor)
 	}
 	return fmt.Errorf("no %q event for %q in journal", eventName, taskID)
 }

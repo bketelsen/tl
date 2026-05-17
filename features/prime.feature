@@ -9,7 +9,7 @@ Feature: Print recommended agent instructions
   Scenario: Running prime prints the recommended AGENTS.md snippet to stdout
     When the developer runs `tl prime`
     Then the output contains a "TaskLedger Workflow" heading
-    And the output describes the ready, claim, show, note, verify, and close steps
+    And the output describes the ready, claim, show, note, and close steps
 
   Scenario: Running prime does not modify any existing AGENTS.md
     Given the file "AGENTS.md" exists with content "# My Project"

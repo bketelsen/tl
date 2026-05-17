@@ -23,7 +23,6 @@ var ErrAlreadyInitialized = errors.New("ledger already exists")
 const defaultConfig = `version: 1
 default_claim_ttl: 60m
 id_prefix: task
-default_verify_commands: []
 actors:
   require_actor: true
 `

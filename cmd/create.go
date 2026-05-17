@@ -67,11 +67,7 @@ func newCreateCmd() *cobra.Command {
 				CreatedBy: actor,
 				DependsOn: []string{},
 				Tags:      append([]string{}, tags...),
-				Verify: task.Verify{
-					Commands:         []string{},
-					EvidenceRequired: []string{},
-				},
-				Body: descriptionBody(description),
+				Body:      descriptionBody(description),
 			}
 
 			if err := store.Write(ledger, t); err != nil {

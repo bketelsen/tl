@@ -15,8 +15,8 @@ and the create-command output.
 
 TaskLedger stores tasks as readable Markdown files with YAML frontmatter
 inside the repository and exposes a CLI with safe claim leases,
-dependency-aware ready queues, handoff notes, verification commands, and
-JSON-first output for automation.
+dependency-aware ready queues, handoff notes, and JSON-first output for
+automation.
 
 It is **not** a Jira / Linear / GitHub Issues replacement, not an
 orchestration platform, not a daemon, not a hosted service.
@@ -66,7 +66,7 @@ A good agent task system should be:
 3. **Machine-readable** — every read command supports `--json`.
 4. **Dependency-aware** — agents can ask "what is ready now?".
 5. **Claim-safe** — claims have leases with stale-claim detection.
-6. **Verification-oriented** — a task defines how completion is proven.
+6. **Handoff-oriented** — notes preserve context between humans and agents.
 7. **Small and predictable** — no daemon, no hidden database, no automatic
    remote push, no AGENTS.md magic.
 
@@ -109,7 +109,6 @@ on each feature.
 | `tl release`      | [features/release.feature](../features/release.feature)       |
 | `tl stale`        | [features/stale.feature](../features/stale.feature)           |
 | `tl note`         | [features/note.feature](../features/note.feature)             |
-| `tl verify`       | [features/verify.feature](../features/verify.feature)         |
 | `tl close`        | [features/close.feature](../features/close.feature)           |
 | `tl pending`      | [features/pending.feature](../features/pending.feature)       |
 | `tl resolve`      | [features/resolve.feature](../features/resolve.feature)       |
@@ -143,7 +142,7 @@ writes to `tasks/`.
 | `in_progress`   | Work is claimed by an actor.                             |
 | `blocked`       | Work cannot continue (dependency or technical blocker).  |
 | `pending_human` | Work requires human clarification or decision.           |
-| `done`          | Work is completed and verified.                          |
+| `done`          | Work is completed.                                       |
 | `cancelled`     | Work is intentionally abandoned.                         |
 
 A task is **ready** (eligible for `tl ready` / `tl claim`) when:
@@ -156,18 +155,13 @@ A task is **ready** (eligible for `tl ready` / `tl claim`) when:
 
 ---
 
-## 9. Claims, verification, events
+## 9. Claims and events
 
 - **Claims** are first-class: actor, claimed_at, expires_at, heartbeat_at.
   Default lease 60 minutes. Stale claims (past `expires_at`) require
   `--force` to release. Spec: [`features/claim.feature`](../features/claim.feature),
   [`features/release.feature`](../features/release.feature),
   [`features/stale.feature`](../features/stale.feature).
-- **Verification commands** are listed in task frontmatter and run in order
-  by `tl verify`, stopping on the first failure. `tl close` refuses to mark
-  a task `done` unless verification has passed (or there are no verify
-  commands). Spec: [`features/verify.feature`](../features/verify.feature),
-  [`features/close.feature`](../features/close.feature).
 - **Events.** Every mutating command appends a JSON line to
   `.taskledger/events.jsonl`. The task file is the current state; the event
   journal is the audit trail.
@@ -184,7 +178,6 @@ A task is **ready** (eligible for `tl ready` / `tl claim`) when:
 |    3 | Task not found       |
 |    4 | Task not ready       |
 |    5 | Task already claimed |
-|    6 | Verification failed  |
 |    7 | Lock failed          |
 
 ---
@@ -233,6 +226,5 @@ That means:
 - Claims are explicit.
 - Stale work is detectable.
 - Dependencies are computable.
-- Verification is part of the task.
 - Handoffs are recorded.
 - Humans can inspect everything.

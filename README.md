@@ -46,8 +46,7 @@ tl ready --json                                                  # what's availa
 tl claim <id>                                                    # take a lease (actor auto-detected)
 tl show <id>                                                     # read the details
 tl note <id> -m "Initial implementation done."                   # record a handoff note
-tl verify <id>                                                   # run the task's checks (planned)
-tl close <id>                                                    # mark as done (planned)
+tl close <id>                                                    # mark as done
 ```
 
 Actor identity is resolved automatically: `--actor` flag > `TL_ACTOR` env >
@@ -145,11 +144,23 @@ context, and decision records.
     --actor              Actor writing the note (optional; auto-resolved)
 ```
 
+### `tl close TASK_ID`
+
+Mark a task as `done`. Unclaimed open tasks may be closed by any actor. Claimed
+tasks may be closed by the claiming actor, or by another actor with `--force`.
+Rejects blocked and already-done tasks.
+
+```
+    --actor              Actor closing the task (optional; auto-resolved)
+    --force              Close even when another actor holds an active claim
+    --json               Emit JSON output
+```
+
 ### Not yet implemented
 
-`verify`, `close`, `release`, `stale`, `dep remove`, `pending`, `resolve`,
-`prime` — specified in [`features/`](features), implementation in progress.
-See [`docs/PRD.md`](docs/PRD.md) §6 for the command index.
+`release`, `stale`, `dep remove`, `pending`, `resolve`, `prime` — specified in
+[`features/`](features), implementation in progress. See [`docs/PRD.md`](docs/PRD.md)
+§6 for the command index.
 
 ### Setup errors
 
@@ -177,11 +188,11 @@ The BDD suite runs features tagged `@implemented`.
 | `tl dep add` | ✅ Implemented |
 | `tl claim` | ✅ Implemented (auto actor resolution) |
 | `tl note` | ✅ Implemented |
+| `tl close` | ✅ Implemented |
 | Actor identity resolution | ✅ Implemented (`--actor` > `TL_ACTOR` > `ACTOR_NAME` > `BEADS_ACTOR` > auto-detect) |
 | Friendly missing-ledger hint | ✅ Implemented |
 | `tl dep remove` | Specified, pending |
 | `tl release` / `tl stale` | Specified, pending |
-| `tl verify` / `tl close` | Specified, pending |
 | `tl pending` / `tl resolve` | Specified, pending |
 | `tl prime` | Specified, pending |
 
@@ -216,9 +227,6 @@ claim:
   claimed_at: null
   expires_at: null
   heartbeat_at: null
-verify:
-  commands: []
-  evidence_required: []
 tags: []
 ---
 
@@ -232,7 +240,7 @@ Validate email format and require a password.
 ## Exit codes
 
 `0` success · `1` generic · `2` invalid args · `3` task not found ·
-`4` task not ready · `5` already claimed · `6` verify failed · `7` lock failed
+`4` task not ready · `5` already claimed · `7` lock failed
 
 ---
 

@@ -14,9 +14,6 @@ claim:
   claimed_at: null
   expires_at: null
   heartbeat_at: null
-verify:
-  commands: []
-  evidence_required: []
 tags: []
 ---
 

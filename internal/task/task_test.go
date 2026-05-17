@@ -25,10 +25,6 @@ func TestMarshalUnmarshalRoundtrip(t *testing.T) {
 			ExpiresAt:   &now,
 			HeartbeatAt: &now,
 		},
-		Verify: Verify{
-			Commands:         []string{"go test ./..."},
-			EvidenceRequired: []string{"test output"},
-		},
 		Tags: []string{"frontend", "auth"},
 		Body: "## Description\n\nValidate email format.\n",
 	}
@@ -70,12 +66,9 @@ func TestMarshalUnmarshalRoundtrip(t *testing.T) {
 	if !parsed.CreatedAt.Equal(now) {
 		t.Errorf("CreatedAt: got %v, want %v", parsed.CreatedAt, now)
 	}
-	if len(parsed.Verify.Commands) != 1 || parsed.Verify.Commands[0] != "go test ./..." {
-		t.Errorf("Verify.Commands: got %v", parsed.Verify.Commands)
-	}
 }
 
-func TestMarshalNoClaimNoVerify(t *testing.T) {
+func TestMarshalNoClaim(t *testing.T) {
 	now := time.Date(2026, 5, 16, 12, 0, 0, 0, time.UTC)
 	task := &Task{
 		ID:        "task-min",

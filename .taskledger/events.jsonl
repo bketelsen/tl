@@ -14,3 +14,5 @@
 {"time":"2026-05-17T01:02:54Z","event":"created","task_id":"task-q4h","actor":"human"}
 {"time":"2026-05-17T01:03:04Z","event":"dependency_added","task_id":"task-59y"}
 {"time":"2026-05-17T01:03:04Z","event":"dependency_added","task_id":"task-oca"}
+{"time":"2026-05-17T15:41:38Z","event":"closed","task_id":"task-lfu","actor":"pi-agent"}
+{"time":"2026-05-17T15:41:38Z","event":"closed","task_id":"task-59y","actor":"pi-agent"}

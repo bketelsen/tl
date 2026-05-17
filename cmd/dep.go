@@ -46,7 +46,7 @@ func newDepAddCmd() *cobra.Command {
 				return err
 			}
 
-			// Verify target exists.
+			// Ensure target exists.
 			_, err = store.Read(ledger, targetID)
 			if errors.Is(err, store.ErrTaskNotFound) {
 				return NewExitError(3, "task %s not found", targetID)
