@@ -3,27 +3,15 @@
 **TaskLedger** (`tl`) is a Git-native task ledger for humans and AI coding
 agents.
 
-This document captures the design intent and the parts of the spec that are
-not derivable from the code or the Gherkin features. For per-command
-behavior, read the corresponding file in [`features/`](../features). For data
-shapes and on-disk format, read [`internal/task/task.go`](../internal/task/task.go)
-and the create-command output.
+This document captures design intent — the parts of the spec that are not
+derivable from code, features, or the README. For per-command behavior read
+the [`features/`](../features) directory; for flags, storage layout, and exit
+codes read the [README](../README.md); for the on-disk task schema read
+[`internal/task/task.go`](../internal/task/task.go).
 
 ---
 
-## 1. Summary
-
-TaskLedger stores tasks as readable Markdown files with YAML frontmatter
-inside the repository and exposes a CLI with safe claim leases,
-dependency-aware ready queues, handoff notes, and JSON-first output for
-automation.
-
-It is **not** a Jira / Linear / GitHub Issues replacement, not an
-orchestration platform, not a daemon, not a hosted service.
-
----
-
-## 2. Problem
+## 1. Problem
 
 Coding agents lose context across sessions. They need a durable, repo-local
 way to know:
@@ -46,7 +34,7 @@ Existing options trade off poorly:
 
 ---
 
-## 3. Target users
+## 2. Target users
 
 Primary: a developer or architect using Claude Code, Codex, Cursor, or
 similar agents inside a Git repository.
@@ -57,7 +45,7 @@ want local-first task tracking without SaaS overhead.
 
 ---
 
-## 4. Core product thesis
+## 3. Core product thesis
 
 A good agent task system should be:
 
@@ -72,7 +60,7 @@ A good agent task system should be:
 
 ---
 
-## 5. Non-goals
+## 4. Non-goals
 
 TaskLedger will not initially support:
 
@@ -90,51 +78,7 @@ The tool tracks and coordinates work. It does not run the agent in v1.
 
 ---
 
-## 6. Command surface
-
-Each `.feature` file in [`features/`](../features) is the V1 acceptance test
-for one command. Implementation status is tracked by the `@implemented` tag
-on each feature.
-
-| Command           | Spec                                                          |
-| ----------------- | ------------------------------------------------------------- |
-| `tl init`         | [features/init.feature](../features/init.feature)             |
-| `tl create`       | [features/create.feature](../features/create.feature)         |
-| `tl list`         | [features/list.feature](../features/list.feature)             |
-| `tl show`         | [features/show.feature](../features/show.feature)             |
-| `tl ready`        | [features/ready.feature](../features/ready.feature)           |
-| `tl dep add`      | [features/dep-add.feature](../features/dep-add.feature)       |
-| `tl dep remove`   | [features/dep-remove.feature](../features/dep-remove.feature) |
-| `tl claim`        | [features/claim.feature](../features/claim.feature)           |
-| `tl release`      | [features/release.feature](../features/release.feature)       |
-| `tl stale`        | [features/stale.feature](../features/stale.feature)           |
-| `tl note`         | [features/note.feature](../features/note.feature)             |
-| `tl close`        | [features/close.feature](../features/close.feature)           |
-| `tl pending`      | [features/pending.feature](../features/pending.feature)       |
-| `tl resolve`      | [features/resolve.feature](../features/resolve.feature)       |
-| `tl agents`       | [features/agents.feature](../features/agents.feature)         |
-
-User-visible flag reference lives in the [README](../README.md).
-
----
-
-## 7. Storage layout
-
-```
-.taskledger/
-  config.yaml      # defaults (claim TTL, id prefix, …)
-  tasks/
-    task-<3>.md    # one Markdown+YAML file per task
-  events.jsonl     # append-only audit journal
-```
-
-Task schema: [`internal/task/task.go`](../internal/task/task.go) (`Task`
-struct and `MarshalMarkdown`). A concrete example file is what `tl create`
-writes to `tasks/`.
-
----
-
-## 8. Status model
+## 5. Status model
 
 | Status          | Meaning                                                  |
 | --------------- | -------------------------------------------------------- |
@@ -147,44 +91,17 @@ writes to `tasks/`.
 
 A task is **ready** (eligible for `tl ready` / `tl claim`) when:
 
-- status is `open`, **and**
+- status is `open` (or `in_progress` with an expired claim), **and**
 - all dependencies are `done`, **and**
-- it has no active claim, **and**
-- it is not `pending_human`, **and**
-- it is not `blocked`.
+- it has no active claim.
+
+The task file is the current state; `.taskledger/events.jsonl` is the
+append-only audit trail. Every mutating command appends one JSON line.
 
 ---
 
-## 9. Claims and events
+## 6. Implementation notes
 
-- **Claims** are first-class: actor, claimed_at, expires_at, heartbeat_at.
-  Default lease 60 minutes. Stale claims (past `expires_at`) require
-  `--force` to release. Spec: [`features/claim.feature`](../features/claim.feature),
-  [`features/release.feature`](../features/release.feature),
-  [`features/stale.feature`](../features/stale.feature).
-- **Events.** Every mutating command appends a JSON line to
-  `.taskledger/events.jsonl`. The task file is the current state; the event
-  journal is the audit trail.
-
----
-
-## 10. Exit codes
-
-| Code | Meaning              |
-| ---: | -------------------- |
-|    0 | Success              |
-|    1 | Generic error        |
-|    2 | Invalid arguments    |
-|    3 | Task not found       |
-|    4 | Task not ready       |
-|    5 | Task already claimed |
-|    7 | Lock failed          |
-
----
-
-## 11. Implementation notes
-
-- **Language:** Go 1.25+; single static binary, distributed via `make dists`.
 - **Major libs:** `spf13/cobra` (CLI), `gopkg.in/yaml.v3` (frontmatter),
   `cucumber/godog` (BDD acceptance tests).
 - **ID generation:** `task-<3 lowercase alphanumeric>`, generated with
@@ -199,7 +116,7 @@ A task is **ready** (eligible for `tl ready` / `tl claim`) when:
 
 ---
 
-## 12. Success metrics
+## 7. Success metrics
 
 MVP is successful if:
 
@@ -215,7 +132,7 @@ MVP is successful if:
 
 ---
 
-## 13. Key differentiator
+## 8. Key differentiator
 
 The strongest differentiator is not "file-based tasks". It is:
 
