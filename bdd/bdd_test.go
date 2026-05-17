@@ -128,6 +128,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	// show.feature preconditions and outcomes
 	ctx.Step(`^a task "([^"]*)" titled "([^"]*)" with status "([^"]*)"$`, w.taskWithTitleAndStatus)
 	ctx.Step(`^"([^"]*)" depends on "([^"]*)"$`, w.taskDependsOn)
+	ctx.Step(`^"([^"]*)" does not depend on "([^"]*)"$`, w.taskDoesNotDependOn)
 	ctx.Step(`^"([^"]*)" has a note from "([^"]*)" saying "([^"]*)"$`, w.taskHasNote)
 	ctx.Step(`^no task with identifier "([^"]*)" exists$`, w.noTaskWithIdentifierExists)
 
@@ -668,6 +669,19 @@ func (w *world) taskDependsOn(id, dependencyID string) error {
 	}
 	t.DependsOn = append(t.DependsOn, dependencyID)
 	return writeFixtureTask(t)
+}
+
+func (w *world) taskDoesNotDependOn(id, dep string) error {
+	t, err := loadFixtureTask(id)
+	if err != nil {
+		return err
+	}
+	for _, d := range t.DependsOn {
+		if d == dep {
+			return fmt.Errorf("task %s still depends on %s; depends_on: %v", id, dep, t.DependsOn)
+		}
+	}
+	return nil
 }
 
 func (w *world) taskHasNote(id, actor, message string) error {

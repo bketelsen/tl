@@ -137,6 +137,15 @@ Idempotent — adding the same dependency twice is a no-op.
     --on                 Target task to depend on (required)
 ```
 
+### `tl dep remove TASK_ID --on TASK_ID`
+
+Remove a dependency link. Both tasks must exist (exit 3 if not).
+Idempotent — removing a non-existent dependency is a no-op.
+
+```
+    --on                 Target task to drop as a dependency (required)
+```
+
 ### `tl note TASK_ID`
 
 Append a timestamped note to a task's body under a `## Notes` section. Notes
@@ -183,7 +192,7 @@ snippet are formatted as Markdown code spans, for example `tl ready --json`.
 
 ### Not yet implemented
 
-`stale`, `dep remove`, `pending`, `resolve` — specified in
+`stale`, `pending`, `resolve` — specified in
 [`features/`](features), implementation in progress. See [`docs/PRD.md`](docs/PRD.md)
 §6 for the command index.
 
@@ -218,7 +227,7 @@ The BDD suite runs features tagged `@implemented`.
 | `tl agents` | ✅ Implemented |
 | Actor identity resolution | ✅ Implemented (`--actor` > `TL_ACTOR` > `ACTOR_NAME` > `BEADS_ACTOR` > auto-detect) |
 | Friendly missing-ledger hint | ✅ Implemented |
-| `tl dep remove` | Specified, pending |
+| `tl dep remove` | ✅ Implemented |
 | `tl stale` | Specified, pending |
 | `tl pending` / `tl resolve` | Specified, pending |
 
