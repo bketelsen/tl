@@ -1,11 +1,11 @@
 ---
 id: task-ol3
 title: Colorize human-readable output for tl show and tl create
-status: open
+status: done
 priority: low
 type: feature
 created_at: 2026-05-16T23:32:43Z
-updated_at: 2026-05-16T23:32:43Z
+updated_at: 2026-05-17T19:31:15Z
 created_by: human
 assignee: null
 depends_on: []
@@ -34,3 +34,9 @@ Controls:
 Non-goals:
 - Zero new dependencies (raw ANSI in internal/color/).
 - No TUI, no syntax highlighting in task bodies, no colored diffs.
+
+## Notes
+
+### 2026-05-17T19:31:15Z - pi:codex
+
+Implemented ANSI color controls and output highlighting. Added internal/color helpers, root --color=auto|never|always with NO_COLOR support, colorized tl show status/priority, tl create success ID, and dimmed closed rows for tl list --all without putting ANSI into tabwriter columns. Added BDD coverage and docs; verified with go test ./... and make test.

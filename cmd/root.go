@@ -4,6 +4,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	internalcolor "github.com/aholbreich/taskledger/internal/color"
 )
 
 var rootVersion = "dev"
@@ -17,13 +19,18 @@ func SetVersion(v string) {
 }
 
 func NewRootCmd() *cobra.Command {
+	var colorMode string
 	root := &cobra.Command{
 		Use:           "tl",
 		Short:         "TaskLedger — a Git-native task ledger for humans and AI coding agents",
 		Version:       rootVersion,
 		SilenceUsage:  true,
 		SilenceErrors: false,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return internalcolor.ValidateMode(colorMode)
+		},
 	}
+	root.PersistentFlags().StringVar(&colorMode, "color", internalcolor.ModeAuto, "When to use ANSI color (auto|never|always)")
 	root.AddCommand(newInitCmd())
 	root.AddCommand(newCreateCmd())
 	root.AddCommand(newShowCmd())

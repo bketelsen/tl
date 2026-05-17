@@ -67,3 +67,10 @@
 {"time":"2026-05-17T19:22:38Z","event":"note_added","task_id":"task-2a8","actor":"pi:codex"}
 {"time":"2026-05-17T19:22:38Z","event":"closed","task_id":"task-2a8","actor":"pi:codex"}
 {"time":"2026-05-17T19:24:10Z","event":"closed","task_id":"task-oca","actor":"pi-agent"}
+{"time":"2026-05-17T19:26:40Z","event":"claimed","task_id":"task-ol3","actor":"pi:codex"}
+{"time":"2026-05-17T19:28:28Z","event":"created","task_id":"task-tzp","actor":"human"}
+{"time":"2026-05-17T19:29:43Z","event":"created","task_id":"task-04h","actor":"pi-agent"}
+{"time":"2026-05-17T19:29:48Z","event":"claimed","task_id":"task-04h","actor":"pi-agent"}
+{"time":"2026-05-17T19:31:15Z","event":"note_added","task_id":"task-ol3","actor":"pi:codex"}
+{"time":"2026-05-17T19:31:15Z","event":"closed","task_id":"task-ol3","actor":"pi:codex"}
+{"time":"2026-05-17T19:31:46Z","event":"closed","task_id":"task-04h","actor":"pi-agent"}

@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -38,12 +40,21 @@ func newListCmd() *cobra.Command {
 				return enc.Encode(tasks)
 			}
 
-			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+			var rendered bytes.Buffer
+			tw := tabwriter.NewWriter(&rendered, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(tw, "ID\tStatus\tPriority\tClaimed By\tTitle")
 			for _, t := range tasks {
 				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", t.ID, t.Status, t.Priority, listClaimActor(t), t.Title)
 			}
-			return tw.Flush()
+			if err := tw.Flush(); err != nil {
+				return err
+			}
+			out := rendered.String()
+			if includeAll && commandColorEnabled(cmd) {
+				out = colorClosedListRows(out, tasks)
+			}
+			_, err = fmt.Fprint(cmd.OutOrStdout(), out)
+			return err
 		},
 	}
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
@@ -85,6 +96,21 @@ func filterListTasks(tasks []*task.Task, includeAll bool, claimedBy string, stat
 
 func isClosedListStatus(status string) bool {
 	return status == "done" || status == "cancelled"
+}
+
+func colorClosedListRows(rendered string, tasks []*task.Task) string {
+	lines := strings.Split(rendered, "\n")
+	var b strings.Builder
+	for i, line := range lines {
+		if i > 0 && i-1 < len(tasks) && isClosedListStatus(tasks[i-1].Status) && line != "" {
+			line = colorClosedListLine(true, line)
+		}
+		b.WriteString(line)
+		if i < len(lines)-1 {
+			b.WriteByte('\n')
+		}
+	}
+	return b.String()
 }
 
 func listClaimActor(t *task.Task) string {

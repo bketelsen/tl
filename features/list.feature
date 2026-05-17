@@ -48,6 +48,16 @@ Feature: List tasks in the ledger
     And the output lists "task-def456" with status "cancelled", priority "medium", claimed by "-", and title "Remove obsolete auth flow"
     And the output lists "task-ghi789" with status "done", priority "low", claimed by "-", and title "Document login flow"
 
+  Scenario: Listing tasks with --all dims closed tasks when color is forced
+    Given the following tasks exist:
+      | id          | status    | priority | title                     |
+      | task-abc123 | open      | high     | Add login form validation |
+      | task-def456 | cancelled | medium   | Remove obsolete auth flow |
+      | task-ghi789 | done      | low      | Document login flow       |
+    When the developer runs `tl --color=always list --all`
+    Then the output colorizes the line for "task-def456" with "dim"
+    And the output colorizes the line for "task-ghi789" with "dim"
+
   Scenario: Listing tasks orders active tasks by priority and identifier
     Given the following tasks exist:
       | id          | status | priority | claimed by | title                        |

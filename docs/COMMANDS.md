@@ -3,6 +3,14 @@
 User-visible flags for each implemented `tl` command. For canonical per-command behavior, read the matching file in [`../features/`](../features); the feature file wins if this page drifts. Every command also accepts
 `--help` at the terminal.
 
+Global flags:
+
+```
+    --color              When to use ANSI color (auto|never|always) [default: auto]
+```
+
+`NO_COLOR` disables ANSI color. JSON output never includes color.
+
 ---
 
 ## `tl init`
@@ -16,7 +24,7 @@ Initialize a `.taskledger/` ledger in the current directory.
 ## `tl create [title] [options]`
 
 Create a new task. The title is a required positional argument or passed via
-`--title`.
+`--title`. Human output colorizes the created task identifier when color is enabled.
 
 ```
     --title              Task title (required, or positional argument)
@@ -34,6 +42,7 @@ List active tasks in the ledger, sorted by priority then identifier. Closed
 statuses (`done`, `cancelled`) are hidden by default. Passing `--status`
 with a closed status reveals matching tasks without needing `--all`. Human
 output includes `ID`, `Status`, `Priority`, `Claimed By`, and `Title`.
+When color is enabled, `--all` dims closed-task rows.
 
 ```
 -a, --all                Include closed tasks (done and cancelled)
@@ -48,6 +57,7 @@ output includes `ID`, `Status`, `Priority`, `Claimed By`, and `Title`.
 
 Show a task in detail. Human output includes the identifier, title, status,
 priority, dependencies, claim state, and Markdown body content such as notes.
+When color is enabled, status and priority values are colorized.
 Accepts both full IDs (`task-k5g`) and bare short codes (`k5g`).
 
 ```

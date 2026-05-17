@@ -25,6 +25,25 @@ Feature: Show a single task in detail
     And the JSON output contains title "Add login form validation"
     And the JSON output contains status "open"
 
+  Scenario: Showing a task with forced color highlights status and priority
+    Given a task "task-abc123" titled "Fix production outage" with status "blocked" and priority "high"
+    When the developer runs `tl --color=always show task-abc123`
+    Then the output colorizes "blocked" with "red"
+    And the output colorizes "high" with "red"
+
+  Scenario: Showing a task with JSON output does not emit color
+    Given a task "task-abc123" titled "Fix production outage" with status "blocked" and priority "high"
+    When the developer runs `tl --color=always show task-abc123 --json`
+    Then the output does not contain ANSI color
+    And the JSON output contains status "blocked"
+
+  Scenario: NO_COLOR disables forced color for show
+    Given environment variable "NO_COLOR" is "1"
+    And a task "task-abc123" titled "Fix production outage" with status "blocked" and priority "high"
+    When the developer runs `tl --color=always show task-abc123`
+    Then the output does not contain ANSI color
+    And the output contains status "blocked"
+
   Scenario: Showing a task by bare short code works like the full identifier
     Given a task "task-abc123" titled "Add login form validation" with status "open"
     When the developer runs `tl show abc123`

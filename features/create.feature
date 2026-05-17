@@ -28,6 +28,15 @@ Feature: Create a task
     And the JSON output contains title "Add login form validation"
     And the JSON output contains status "open"
 
+  Scenario: Creating a task with forced color highlights the new task identifier
+    When the developer runs `tl --color=always create "Add login form validation"`
+    Then the output colorizes the new task identifier
+
+  Scenario: Creating a task with JSON output does not emit color
+    When the developer runs `tl --color=always create "Add login form validation" --json`
+    Then the output does not contain ANSI color
+    And the JSON output contains the new task identifier
+
   Scenario: Creating a task records in it shortest version
     Given no tasks exist
     When the developer runs `tl create "Add login form validation"`
@@ -80,3 +89,11 @@ Feature: Create a task
     When the developer runs `tl create "Bad priority" --priority med`
     Then the command exits with code 2
     And the output reports that the priority is invalid
+
+  Scenario: add is a synonym for create
+    Given no tasks exist
+    When the developer runs `tl add "Add login form validation"`
+    Then a new task with title "Add login form validation" exists
+    And the new task has status "open"
+    And the new task has no dependencies
+    And an event "created" is recorded for the new task

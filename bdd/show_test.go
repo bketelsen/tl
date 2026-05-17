@@ -3,19 +3,22 @@ package bdd
 import (
 	"errors"
 	"fmt"
-	"github.com/cucumber/godog"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/cucumber/godog"
+
+	internalcolor "github.com/aholbreich/taskledger/internal/color"
 	"github.com/aholbreich/taskledger/internal/task"
-	"path/filepath"
 )
 
 // --- show.feature support -------------------------------------------------
 
 func initializeShowSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^a task "([^"]*)" titled "([^"]*)" with status "([^"]*)"$`, w.taskWithTitleAndStatus)
+	ctx.Step(`^a task "([^"]*)" titled "([^"]*)" with status "([^"]*)" and priority "([^"]*)"$`, w.taskWithTitleStatusAndPriority)
 	ctx.Step(`^"([^"]*)" depends on "([^"]*)"$`, w.taskDependsOn)
 	ctx.Step(`^"([^"]*)" does not depend on "([^"]*)"$`, w.taskDoesNotDependOn)
 	ctx.Step(`^"([^"]*)" has a note from "([^"]*)" saying "([^"]*)"$`, w.taskHasNote)
@@ -31,6 +34,10 @@ func initializeShowSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the output contains the note from "([^"]*)"$`, w.outputContains)
 	ctx.Step(`^the command exits with code (\d+)$`, w.commandExitsWithCode)
 	ctx.Step(`^the output reports that "([^"]*)" was not found$`, w.outputReportsNotFound)
+	ctx.Step(`^the output colorizes "([^"]*)" with "([^"]*)"$`, w.outputColorizesTextWith)
+	ctx.Step(`^the output colorizes the new task identifier$`, w.outputColorizesNewTaskIdentifier)
+	ctx.Step(`^the output colorizes the line for "([^"]*)" with "([^"]*)"$`, w.outputColorizesLineForWith)
+	ctx.Step(`^the output does not contain ANSI color$`, w.outputDoesNotContainANSIColor)
 }
 
 func (w *world) taskWithNoDependencies(id string) error {
@@ -52,11 +59,15 @@ func (w *world) taskExists(id string) error {
 }
 
 func (w *world) taskWithTitleAndStatus(id, title, status string) error {
+	return w.taskWithTitleStatusAndPriority(id, title, status, "medium")
+}
+
+func (w *world) taskWithTitleStatusAndPriority(id, title, status, priority string) error {
 	return writeFixtureTask(&task.Task{
 		ID:        id,
 		Title:     title,
 		Status:    status,
-		Priority:  "medium",
+		Priority:  priority,
 		CreatedAt: fixtureTime,
 		UpdatedAt: fixtureTime,
 		CreatedBy: "human",
@@ -173,4 +184,58 @@ func (w *world) outputReportsNotFound(id string) error {
 		return fmt.Errorf("output does not report %q as not found; got:\n%s", id, combined)
 	}
 	return nil
+}
+
+func (w *world) outputColorizesTextWith(text, colorName string) error {
+	return w.outputContains(coloredText(colorName, text))
+}
+
+func (w *world) outputColorizesNewTaskIdentifier() error {
+	t, err := loadOnlyTask()
+	if err != nil {
+		return err
+	}
+	return w.outputContains(internalcolor.ID(t.ID))
+}
+
+func (w *world) outputColorizesLineForWith(id, colorName string) error {
+	line, ok := lineContaining(w.stdout.String(), id)
+	if !ok {
+		return fmt.Errorf("output does not contain line for %q; got:\n%s", id, w.stdout.String())
+	}
+	if !strings.HasPrefix(line, colorCode(colorName)) || !strings.HasSuffix(line, internalcolor.Reset) {
+		return fmt.Errorf("line for %q is not colorized with %s; line: %q", id, colorName, line)
+	}
+	return nil
+}
+
+func (w *world) outputDoesNotContainANSIColor() error {
+	combined := w.stdout.String() + w.stderr.String()
+	if strings.Contains(combined, "\x1b[") {
+		return fmt.Errorf("output contains ANSI color; got:\n%s", combined)
+	}
+	return nil
+}
+
+func coloredText(colorName, text string) string {
+	return internalcolor.Apply(colorCode(colorName), text)
+}
+
+func colorCode(colorName string) string {
+	switch colorName {
+	case "red":
+		return internalcolor.Red
+	case "green":
+		return internalcolor.Green
+	case "yellow":
+		return internalcolor.Yellow
+	case "magenta":
+		return internalcolor.Magenta
+	case "cyan":
+		return internalcolor.Cyan
+	case "dim":
+		return internalcolor.Dim
+	default:
+		return ""
+	}
 }

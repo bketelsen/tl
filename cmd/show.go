@@ -36,7 +36,7 @@ func newShowCmd() *cobra.Command {
 				enc.SetIndent("", "  ")
 				return enc.Encode(t)
 			}
-			printTaskDetail(cmd.OutOrStdout(), t)
+			printTaskDetail(cmd.OutOrStdout(), t, commandColorEnabled(cmd))
 			return nil
 		},
 	}
@@ -44,11 +44,11 @@ func newShowCmd() *cobra.Command {
 	return c
 }
 
-func printTaskDetail(out interface{ Write([]byte) (int, error) }, t *task.Task) {
+func printTaskDetail(out interface{ Write([]byte) (int, error) }, t *task.Task, useColor bool) {
 	fmt.Fprintf(out, "ID: %s\n", t.ID)
 	fmt.Fprintf(out, "Title: %s\n", t.Title)
-	fmt.Fprintf(out, "Status: %s\n", t.Status)
-	fmt.Fprintf(out, "Priority: %s\n", t.Priority)
+	fmt.Fprintf(out, "Status: %s\n", colorStatus(useColor, t.Status))
+	fmt.Fprintf(out, "Priority: %s\n", colorPriority(useColor, t.Priority))
 
 	if len(t.DependsOn) == 0 {
 		fmt.Fprintln(out, "Depends On: none")

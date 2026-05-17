@@ -23,9 +23,10 @@ func newCreateCmd() *cobra.Command {
 		asJSON      bool
 	)
 	c := &cobra.Command{
-		Use:   "create [title] [options]",
-		Short: "Create a new task in the ledger",
-		Args:  cobra.MaximumNArgs(1),
+		Use:     "create [title] [options]",
+		Short:   "Create a new task in the ledger",
+		Aliases: []string{"add"},
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			title := flagTitle
 			if title == "" && len(args) > 0 {
@@ -92,7 +93,7 @@ func newCreateCmd() *cobra.Command {
 				enc.SetIndent("", "  ")
 				return enc.Encode(t)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Created task %s\n", t.ID)
+			fmt.Fprintf(cmd.OutOrStdout(), "Created task %s\n", colorID(commandColorEnabled(cmd), t.ID))
 			return nil
 		},
 	}
