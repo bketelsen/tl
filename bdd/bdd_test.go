@@ -168,6 +168,21 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^environment variable "([^"]*)" is "([^"]*)"$`, w.setEnv)
 	ctx.Step(`^the detected agent is "([^"]*)"$`, w.setDetectedAgent)
 	ctx.Step(`^the claim expiry for "([^"]*)" is extended$`, w.claimExpiryIsExtended)
+
+	// ready.feature preconditions and outcomes
+	ctx.Step(`^a task "([^"]*)" with status "([^"]*)" and no dependencies$`, w.taskWithStatusAndNoDeps)
+	ctx.Step(`^a task "([^"]*)" titled "([^"]*)" with status "([^"]*)" and no dependencies$`, w.taskTitledWithStatusAndNoDeps)
+	ctx.Step(`^a task "([^"]*)" with an expired claim by "([^"]*)"$`, w.taskWithExpiredClaim)
+	ctx.Step(`^the ready output contains "([^"]*)"$`, w.readyOutputContains)
+	ctx.Step(`^the ready output does not contain "([^"]*)"$`, w.readyOutputDoesNotContain)
+	ctx.Step(`^the JSON output is an array containing a task with identifier "([^"]*)"$`, w.jsonArrayContainsTaskID)
+	ctx.Step(`^the JSON output contains a priority for "([^"]*)"$`, w.jsonArrayTaskHasPriority)
+
+	// note.feature preconditions and outcomes
+	ctx.Step(`^a task "([^"]*)" titled "([^"]*)"$`, w.taskTitled)
+	ctx.Step(`^"([^"]*)" has a note from "([^"]*)"$`, w.taskHasNoteFrom)
+	ctx.Step(`^the note contains the message "([^"]*)"$`, w.noteContainsMessage)
+	ctx.Step(`^the note has a timestamp$`, w.noteHasTimestamp)
 }
 
 // --- init.feature support -------------------------------------------------
@@ -843,6 +858,147 @@ func (w *world) claimExpiryIsExtended(id string) error {
 	return nil
 }
 
+// --- ready.feature support ------------------------------------------------
+
+func (w *world) taskWithStatusAndNoDeps(id, status string) error {
+	return w.taskWithStatus(id, status)
+}
+
+func (w *world) taskTitledWithStatusAndNoDeps(id, title, status string) error {
+	return w.taskWithTitleAndStatus(id, title, status)
+}
+
+func (w *world) taskWithExpiredClaim(id, actor string) error {
+	now := time.Now().UTC().Truncate(time.Second)
+	expired := now.Add(-1 * time.Hour)
+	a := actor
+	return writeFixtureTask(&task.Task{
+		ID:        id,
+		Title:     id,
+		Status:    "in_progress",
+		Priority:  "medium",
+		CreatedAt: fixtureTime,
+		UpdatedAt: fixtureTime,
+		CreatedBy: "human",
+		DependsOn: []string{},
+		Tags:      []string{},
+		Claim: task.Claim{
+			Actor:       &a,
+			ClaimedAt:   &expired,
+			ExpiresAt:   &expired,
+			HeartbeatAt: &expired,
+		},
+		Verify: task.Verify{
+			Commands:         []string{},
+			EvidenceRequired: []string{},
+		},
+	})
+}
+
+func (w *world) readyOutputContains(id string) error {
+	combined := w.stdout.String()
+	if !strings.Contains(combined, id) {
+		return fmt.Errorf("ready output does not contain %q; got:\n%s", id, combined)
+	}
+	return nil
+}
+
+func (w *world) readyOutputDoesNotContain(id string) error {
+	combined := w.stdout.String()
+	if strings.Contains(combined, id) {
+		return fmt.Errorf("ready output contains %q but should not; got:\n%s", id, combined)
+	}
+	return nil
+}
+
+func (w *world) jsonArrayTaskHasPriority(id string) error {
+	tasks, err := w.jsonTaskArray()
+	if err != nil {
+		return err
+	}
+	for _, t := range tasks {
+		if t.ID == id {
+			if t.Priority == "" {
+				return fmt.Errorf("task %s in JSON array has no priority", id)
+			}
+			return nil
+		}
+	}
+	return fmt.Errorf("JSON array does not contain task %q", id)
+}
+
+// --- note.feature support -------------------------------------------------
+
+func (w *world) taskTitled(id, title string) error {
+	return w.taskWithTitleAndStatus(id, title, "open")
+}
+
+func (w *world) taskHasNoteFrom(id, actor string) error {
+	t, err := loadFixtureTask(id)
+	if err != nil {
+		return err
+	}
+	// Look for a note header containing the actor name.
+	idx := strings.Index(t.Body, "## Notes")
+	if idx < 0 {
+		return fmt.Errorf("task %s has no ## Notes section; body:\n%s", id, t.Body)
+	}
+	notesSection := t.Body[idx:]
+	found := false
+	for _, line := range strings.Split(notesSection, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "### ") && strings.Contains(line, " - "+actor) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("task %s has no note from %q; body:\n%s", id, actor, t.Body)
+	}
+	return nil
+}
+
+func (w *world) noteContainsMessage(message string) error {
+	t, err := loadOnlyTask()
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(t.Body, message) {
+		return fmt.Errorf("note body does not contain %q; body:\n%s", message, t.Body)
+	}
+	return nil
+}
+
+func (w *world) noteHasTimestamp() error {
+	t, err := loadOnlyTask()
+	if err != nil {
+		return err
+	}
+	// Look for an RFC 3339 timestamp in the Notes section.
+	idx := strings.Index(t.Body, "## Notes")
+	if idx < 0 {
+		return fmt.Errorf("body has no ## Notes section; body:\n%s", t.Body)
+	}
+	notesSection := t.Body[idx:]
+	hasTimestamp := false
+	for _, line := range strings.Split(notesSection, "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "### ") {
+			// Format: "### 2026-05-17T10:30:00Z - actor"
+			parts := strings.SplitN(strings.TrimPrefix(line, "### "), " - ", 2)
+			if len(parts) >= 1 {
+				if _, err := time.Parse(time.RFC3339, strings.TrimSpace(parts[0])); err == nil {
+					hasTimestamp = true
+					break
+				}
+			}
+		}
+	}
+	if !hasTimestamp {
+		return fmt.Errorf("no RFC 3339 timestamp found in ## Notes section; body:\n%s", t.Body)
+	}
+	return nil
+}
+
 // --- shared CLI invocation ------------------------------------------------
 
 func (w *world) runTl(args string) error {
@@ -909,6 +1065,17 @@ func (w *world) jsonStringField(field string) func(string) error {
 }
 
 func (w *world) jsonStringValue(field string) (string, error) {
+	// Try array first (e.g. ready --json, list --json).
+	var arr []map[string]any
+	if err := json.Unmarshal(w.stdout.Bytes(), &arr); err == nil {
+		for _, item := range arr {
+			if v, ok := item[field].(string); ok && v != "" {
+				return v, nil
+			}
+		}
+		return "", fmt.Errorf("JSON array has no entry with non-empty %q; got: %s", field, w.stdout.String())
+	}
+	// Fall back to single object (e.g. show --json, create --json).
 	var data map[string]any
 	if err := json.Unmarshal(w.stdout.Bytes(), &data); err != nil {
 		return "", fmt.Errorf("stdout is not JSON (%v); got: %s", err, w.stdout.String())

@@ -1,3 +1,4 @@
+@implemented
 Feature: Append a note to a task
   As an agent or developer
   I want to record notes and handoff context on a task
@@ -17,3 +18,4 @@ Feature: Append a note to a task
     Given a task "task-abc123" exists
     When the agent runs `tl note task-abc123 --actor claude-code:frontend --message "Verified locally."`
     Then an event "note_added" is recorded for "task-abc123"
+
