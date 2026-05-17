@@ -11,7 +11,12 @@ import (
 
 func initializeAgentsSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the file "([^"]*)" exists with content "([^"]*)"$`, w.fileExistsWithContent)
+	ctx.Step(`^the file "([^"]*)" exists with content:$`, w.fileExistsWithDocString)
 	ctx.Step(`^the file "([^"]*)" still has content "([^"]*)"$`, w.fileStillHasContent)
+	ctx.Step(`^the file "([^"]*)" contains "([^"]*)"$`, w.fileContains)
+	ctx.Step(`^the file "([^"]*)" does not contain "([^"]*)"$`, w.fileDoesNotContain)
+	ctx.Step(`^the file "([^"]*)" does not exist$`, w.fileDoesNotExist)
+	ctx.Step(`^the output contains "([^"]*)"$`, w.outputContains)
 	ctx.Step(`^the output contains a "([^"]*)" heading$`, w.outputContainsHeading)
 	ctx.Step(`^the output describes the ready, claim, show, note, and close steps$`, w.outputDescribesWorkflowSteps)
 	ctx.Step(`^the output formats task commands as Markdown code spans$`, w.outputFormatsCommandsAsMarkdownCodeSpans)
@@ -22,6 +27,10 @@ func (w *world) fileExistsWithContent(path, content string) error {
 	return os.WriteFile(path, []byte(content), 0o644)
 }
 
+func (w *world) fileExistsWithDocString(path string, content *godog.DocString) error {
+	return os.WriteFile(path, []byte(content.Content), 0o644)
+}
+
 func (w *world) fileStillHasContent(path, expected string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -29,6 +38,37 @@ func (w *world) fileStillHasContent(path, expected string) error {
 	}
 	if string(data) != expected {
 		return fmt.Errorf("file %s content = %q, expected %q", path, string(data), expected)
+	}
+	return nil
+}
+
+func (w *world) fileContains(path, needle string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(string(data), needle) {
+		return fmt.Errorf("file %s does not contain %q; got:\n%s", path, needle, string(data))
+	}
+	return nil
+}
+
+func (w *world) fileDoesNotContain(path, needle string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if strings.Contains(string(data), needle) {
+		return fmt.Errorf("file %s contains %q; got:\n%s", path, needle, string(data))
+	}
+	return nil
+}
+
+func (w *world) fileDoesNotExist(path string) error {
+	if _, err := os.Stat(path); err == nil {
+		return fmt.Errorf("file %s exists", path)
+	} else if !os.IsNotExist(err) {
+		return err
 	}
 	return nil
 }

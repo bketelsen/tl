@@ -61,3 +61,9 @@
 {"time":"2026-05-17T19:13:25Z","event":"note_added","task_id":"task-htt","actor":"pi:codex"}
 {"time":"2026-05-17T19:13:25Z","event":"closed","task_id":"task-htt","actor":"pi:codex"}
 {"time":"2026-05-17T19:17:35Z","event":"closed","task_id":"task-5me","actor":"pi-agent"}
+{"time":"2026-05-17T19:17:46Z","event":"created","task_id":"task-2a8","actor":"human"}
+{"time":"2026-05-17T19:18:24Z","event":"claimed","task_id":"task-oca","actor":"pi-agent"}
+{"time":"2026-05-17T19:19:19Z","event":"claimed","task_id":"task-2a8","actor":"pi:codex"}
+{"time":"2026-05-17T19:22:38Z","event":"note_added","task_id":"task-2a8","actor":"pi:codex"}
+{"time":"2026-05-17T19:22:38Z","event":"closed","task_id":"task-2a8","actor":"pi:codex"}
+{"time":"2026-05-17T19:24:10Z","event":"closed","task_id":"task-oca","actor":"pi-agent"}

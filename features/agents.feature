@@ -1,8 +1,8 @@
 @implemented
 Feature: Print recommended agent instructions
   As a developer setting up an agent-friendly repository
-  I want to see the recommended AGENTS.md snippet
-  So that I can copy it into my own AGENTS.md without the tool editing files for me
+  I want to see or install the recommended AGENTS.md snippet
+  So that I can give agents consistent TaskLedger workflow instructions
 
   Background:
     Given an initialized TaskLedger repository
@@ -32,3 +32,33 @@ Feature: Print recommended agent instructions
     Given the file "AGENTS.md" exists with content "# My Project"
     When the developer runs `tl agents`
     Then the file "AGENTS.md" still has content "# My Project"
+
+  Scenario: Running agents with update appends to existing agent instruction files
+    Given the file "AGENTS.md" exists with content "# My Project"
+    And the file "CLAUDE.md" exists with content "# Claude Notes"
+    When the developer runs `tl agents --update`
+    Then the file "AGENTS.md" contains "<!-- BEGIN TASKLEDGER WORKFLOW -->"
+    And the file "AGENTS.md" contains "## TaskLedger Workflow"
+    And the file "CLAUDE.md" contains "## TaskLedger Workflow"
+    And the output contains "Updated AGENTS.md"
+    And the output contains "Updated CLAUDE.md"
+
+  Scenario: Running agents with update refreshes an existing managed block
+    Given the file "AGENTS.md" exists with content:
+      """
+      # My Project
+
+      <!-- BEGIN TASKLEDGER WORKFLOW -->
+      old workflow text
+      <!-- END TASKLEDGER WORKFLOW -->
+      """
+    When the developer runs `tl agents --update`
+    Then the file "AGENTS.md" contains "`tl ready --tag <role> --json`"
+    And the file "AGENTS.md" does not contain "old workflow text"
+
+  Scenario: Running agents with update does not create missing instruction files
+    When the developer runs `tl agents --update`
+    Then the file "AGENTS.md" does not exist
+    And the file "CLAUDE.md" does not exist
+    And the file "GEMINI.md" does not exist
+    And the output contains "No existing agent instruction files found"

@@ -1,3 +1,4 @@
+@implemented
 Feature: Resolve a pending task with an answer
   As a human responding to an agent's question
   I want to provide an answer that returns the task to the ready queue
