@@ -23,6 +23,7 @@
 go.work
 
 # Ledger local state (test artifacts)
+.taskledger/
 
 # IDE
 .vscode/
