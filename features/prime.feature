@@ -1,3 +1,4 @@
+@implemented
 Feature: Print recommended agent instructions
   As a developer setting up an agent-friendly repository
   I want to see the recommended AGENTS.md snippet

@@ -8,10 +8,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/aholbreich/taskledger/internal/store"
+	"github.com/aholbreich/taskledger/internal/task"
 )
 
 func newListCmd() *cobra.Command {
 	var asJSON bool
+	var includeAll bool
+	var claimedBy string
 	c := &cobra.Command{
 		Use:   "list",
 		Short: "List tasks in the ledger",
@@ -24,6 +27,7 @@ func newListCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			tasks = filterListTasks(tasks, includeAll, claimedBy)
 
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
@@ -32,13 +36,48 @@ func newListCmd() *cobra.Command {
 			}
 
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-			fmt.Fprintln(tw, "ID\tStatus\tPriority\tTitle")
+			fmt.Fprintln(tw, "ID\tStatus\tPriority\tClaimed By\tTitle")
 			for _, t := range tasks {
-				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", t.ID, t.Status, t.Priority, t.Title)
+				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", t.ID, t.Status, t.Priority, listClaimActor(t), t.Title)
 			}
 			return tw.Flush()
 		},
 	}
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
+	c.Flags().BoolVarP(&includeAll, "all", "a", false, "Include closed tasks (done and cancelled)")
+	c.Flags().StringVar(&claimedBy, "claimed-by", "", "Only show tasks claimed by this actor")
 	return c
+}
+
+func filterListTasks(tasks []*task.Task, includeAll bool, claimedBy string) []*task.Task {
+	filtered := tasks[:0]
+	for _, t := range tasks {
+		if !includeAll && isClosedListStatus(t.Status) {
+			continue
+		}
+		if claimedBy != "" && taskClaimActor(t) != claimedBy {
+			continue
+		}
+		filtered = append(filtered, t)
+	}
+	return filtered
+}
+
+func isClosedListStatus(status string) bool {
+	return status == "done" || status == "cancelled"
+}
+
+func listClaimActor(t *task.Task) string {
+	actor := taskClaimActor(t)
+	if actor == "" {
+		return "-"
+	}
+	return actor
+}
+
+func taskClaimActor(t *task.Task) string {
+	if t.Claim.Actor == nil {
+		return ""
+	}
+	return *t.Claim.Actor
 }

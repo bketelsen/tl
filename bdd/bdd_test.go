@@ -13,6 +13,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -116,8 +117,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	// list.feature preconditions and outcomes
 	ctx.Step(`^the following tasks exist:$`, w.followingTasksExist)
 	ctx.Step(`^the output lists "([^"]*)" with status "([^"]*)" and title "([^"]*)"$`, w.outputListsTask)
+	ctx.Step(`^the output lists "([^"]*)" with status "([^"]*)", priority "([^"]*)", claimed by "([^"]*)", and title "([^"]*)"$`, w.outputListsTaskWithColumns)
+	ctx.Step(`^the output does not list "([^"]*)"$`, w.outputDoesNotListTask)
+	ctx.Step(`^the list output columns are exactly:$`, w.listOutputColumnsAreExactly)
 	ctx.Step(`^the JSON output is an array of (\d+) tasks$`, w.jsonOutputIsArrayOfTasks)
 	ctx.Step(`^the JSON output contains a task with identifier "([^"]*)"$`, w.jsonArrayContainsTaskID)
+	ctx.Step(`^the JSON output does not contain a task with identifier "([^"]*)"$`, w.jsonArrayDoesNotContainTaskID)
 	ctx.Step(`^the listed task identifiers appear in this order:$`, w.listedTaskIDsAppearInOrder)
 
 	// show.feature preconditions and outcomes
@@ -190,6 +195,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^"([^"]*)" has a note from "([^"]*)"$`, w.taskHasNoteFrom)
 	ctx.Step(`^the note contains the message "([^"]*)"$`, w.noteContainsMessage)
 	ctx.Step(`^the note has a timestamp$`, w.noteHasTimestamp)
+
+	// prime.feature preconditions and outcomes
+	ctx.Step(`^the file "([^"]*)" exists with content "([^"]*)"$`, w.fileExistsWithContent)
+	ctx.Step(`^the file "([^"]*)" still has content "([^"]*)"$`, w.fileStillHasContent)
+	ctx.Step(`^the output contains a "([^"]*)" heading$`, w.outputContainsHeading)
+	ctx.Step(`^the output describes the ready, claim, show, note, and close steps$`, w.outputDescribesWorkflowSteps)
 }
 
 // --- init.feature support -------------------------------------------------
@@ -430,10 +441,19 @@ func (w *world) eventRecordedFor(eventName, taskID string) error {
 // --- list.feature support -------------------------------------------------
 
 func (w *world) followingTasksExist(table *godog.Table) error {
+	allowedColumns := map[string]bool{
+		"id": true, "status": true, "priority": true, "claimed by": true, "title": true,
+	}
+	for _, header := range table.Rows[0].Cells {
+		if !allowedColumns[header.Value] {
+			return fmt.Errorf("unsupported task fixture column %q", header.Value)
+		}
+	}
+
 	for rowIdx, row := range table.Rows[1:] {
 		values := map[string]string{}
 		for i, cell := range row.Cells {
-			values[table.Rows[0].Cells[i].Value] = cell.Value
+			values[table.Rows[0].Cells[i].Value] = strings.TrimSpace(cell.Value)
 		}
 		id := values["id"]
 		if id == "" {
@@ -451,7 +471,8 @@ func (w *world) followingTasksExist(table *godog.Table) error {
 		if title == "" {
 			return fmt.Errorf("task row %d is missing title", rowIdx+1)
 		}
-		if err := writeFixtureTask(&task.Task{
+
+		fixture := &task.Task{
 			ID:        id,
 			Title:     title,
 			Status:    status,
@@ -461,7 +482,18 @@ func (w *world) followingTasksExist(table *godog.Table) error {
 			CreatedBy: "human",
 			DependsOn: []string{},
 			Tags:      []string{},
-		}); err != nil {
+		}
+		if actor := values["claimed by"]; actor != "" {
+			claimedAt := fixtureTime
+			expiresAt := fixtureTime.Add(time.Hour)
+			fixture.Claim = task.Claim{
+				Actor:       &actor,
+				ClaimedAt:   &claimedAt,
+				ExpiresAt:   &expiresAt,
+				HeartbeatAt: &claimedAt,
+			}
+		}
+		if err := writeFixtureTask(fixture); err != nil {
 			return err
 		}
 	}
@@ -478,6 +510,47 @@ func (w *world) outputListsTask(id, status, title string) error {
 	}
 	if !strings.Contains(line, title) {
 		return fmt.Errorf("line for %q does not contain title %q: %s", id, title, line)
+	}
+	return nil
+}
+
+func (w *world) outputListsTaskWithColumns(id, status, priority, claimedBy, title string) error {
+	line, ok := lineContaining(w.stdout.String(), id)
+	if !ok {
+		return fmt.Errorf("output does not list %q; got:\n%s", id, w.stdout.String())
+	}
+	columns := splitListLine(line)
+	expected := []string{id, status, priority, claimedBy, title}
+	if len(columns) != len(expected) {
+		return fmt.Errorf("line for %q has columns %v, expected %v; line: %s", id, columns, expected, line)
+	}
+	for i := range expected {
+		if columns[i] != expected[i] {
+			return fmt.Errorf("line for %q column %d = %q, expected %q; columns: %v", id, i+1, columns[i], expected[i], columns)
+		}
+	}
+	return nil
+}
+
+func (w *world) outputDoesNotListTask(id string) error {
+	if line, ok := lineContaining(w.stdout.String(), id); ok {
+		return fmt.Errorf("output unexpectedly lists %q in line: %s\nfull output:\n%s", id, line, w.stdout.String())
+	}
+	return nil
+}
+
+func (w *world) listOutputColumnsAreExactly(table *godog.Table) error {
+	lines := nonEmptyLines(w.stdout.String())
+	if len(lines) == 0 {
+		return fmt.Errorf("list output is empty")
+	}
+	actual := splitListLine(lines[0])
+	var expected []string
+	for _, row := range table.Rows[1:] {
+		expected = append(expected, row.Cells[0].Value)
+	}
+	if strings.Join(actual, "|") != strings.Join(expected, "|") {
+		return fmt.Errorf("list columns = %v, expected %v; output:\n%s", actual, expected, w.stdout.String())
 	}
 	return nil
 }
@@ -504,6 +577,19 @@ func (w *world) jsonArrayContainsTaskID(id string) error {
 		}
 	}
 	return fmt.Errorf("JSON array does not contain task %q; got: %s", id, w.stdout.String())
+}
+
+func (w *world) jsonArrayDoesNotContainTaskID(id string) error {
+	tasks, err := w.jsonTaskArray()
+	if err != nil {
+		return err
+	}
+	for _, t := range tasks {
+		if t.ID == id {
+			return fmt.Errorf("JSON array unexpectedly contains task %q; got: %s", id, w.stdout.String())
+		}
+	}
+	return nil
 }
 
 func (w *world) listedTaskIDsAppearInOrder(table *godog.Table) error {
@@ -1024,6 +1110,40 @@ func (w *world) noteHasTimestamp() error {
 	return nil
 }
 
+// --- prime.feature support ------------------------------------------------
+
+func (w *world) fileExistsWithContent(path, content string) error {
+	return os.WriteFile(path, []byte(content), 0o644)
+}
+
+func (w *world) fileStillHasContent(path, expected string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if string(data) != expected {
+		return fmt.Errorf("file %s content = %q, expected %q", path, string(data), expected)
+	}
+	return nil
+}
+
+func (w *world) outputContainsHeading(heading string) error {
+	needle := "## " + heading
+	if !strings.Contains(w.stdout.String(), needle) {
+		return fmt.Errorf("output does not contain heading %q; got:\n%s", needle, w.stdout.String())
+	}
+	return nil
+}
+
+func (w *world) outputDescribesWorkflowSteps() error {
+	for _, command := range []string{"tl ready", "tl claim", "tl show", "tl note", "tl close"} {
+		if !strings.Contains(w.stdout.String(), command) {
+			return fmt.Errorf("output does not describe %s; got:\n%s", command, w.stdout.String())
+		}
+	}
+	return nil
+}
+
 // --- shared CLI invocation ------------------------------------------------
 
 func (w *world) runTl(args string) error {
@@ -1202,4 +1322,10 @@ func nonEmptyLines(s string) []string {
 		}
 	}
 	return lines
+}
+
+var listColumnSeparator = regexp.MustCompile(`\s{2,}`)
+
+func splitListLine(line string) []string {
+	return listColumnSeparator.Split(strings.TrimSpace(line), -1)
 }

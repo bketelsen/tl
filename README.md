@@ -85,9 +85,13 @@ Create a new task. The title is a required positional argument or passed via
 
 ### `tl list`
 
-List every task in the ledger, sorted by priority then identifier.
+List active tasks in the ledger, sorted by priority then identifier. Closed
+statuses (`done`, `cancelled`) are hidden by default. Human output includes
+`ID`, `Status`, `Priority`, `Claimed By`, and `Title`.
 
 ```
+-a, --all                Include closed tasks (done and cancelled)
+    --claimed-by         Only show tasks claimed by this actor
     --json               Emit JSON output
 ```
 
@@ -156,9 +160,18 @@ Rejects blocked and already-done tasks.
     --json               Emit JSON output
 ```
 
+### `tl prime`
+
+Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. The command
+writes only to stdout and never edits `AGENTS.md` for you.
+
+```
+(no flags)
+```
+
 ### Not yet implemented
 
-`release`, `stale`, `dep remove`, `pending`, `resolve`, `prime` — specified in
+`release`, `stale`, `dep remove`, `pending`, `resolve` — specified in
 [`features/`](features), implementation in progress. See [`docs/PRD.md`](docs/PRD.md)
 §6 for the command index.
 
@@ -189,12 +202,12 @@ The BDD suite runs features tagged `@implemented`.
 | `tl claim` | ✅ Implemented (auto actor resolution) |
 | `tl note` | ✅ Implemented |
 | `tl close` | ✅ Implemented |
+| `tl prime` | ✅ Implemented |
 | Actor identity resolution | ✅ Implemented (`--actor` > `TL_ACTOR` > `ACTOR_NAME` > `BEADS_ACTOR` > auto-detect) |
 | Friendly missing-ledger hint | ✅ Implemented |
 | `tl dep remove` | Specified, pending |
 | `tl release` / `tl stale` | Specified, pending |
 | `tl pending` / `tl resolve` | Specified, pending |
-| `tl prime` | Specified, pending |
 
 ---
 
