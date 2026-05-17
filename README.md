@@ -47,8 +47,10 @@ tl note <id> -m "Initial implementation done."                   # record a hand
 tl close <id>                                                    # mark as done
 ```
 
-A full collaboration loop — including a handoff back to the human when the
-agent needs a decision — looks like this:
+## Workflow reasoning
+
+An example full collaboration loop - including a handoff back to the human when the
+agent needs a decision could looks like this:
 
 ```mermaid
 sequenceDiagram
@@ -59,7 +61,7 @@ sequenceDiagram
     A->>L: tl ready --json
     L-->>A: [task-abc]
     A->>L: tl claim task-abc
-    A->>L: tl note task-abc -m "..."
+    A->>L: tl note task-abc -m "Implementing BE ..."
     A->>L: tl pending task-abc --question "Which provider?"
     H->>L: tl resolve task-abc --answer "GitHub OAuth"
     A->>L: tl claim task-abc
