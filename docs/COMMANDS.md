@@ -226,9 +226,11 @@ task frontmatter.
 
 ## `tl agents`
 
-Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. By
-default, writes only to stdout and never edits files for you. Commands in the
-snippet are formatted as Markdown code spans, for example `tl ready --json`.
+Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. The
+snippet instructs agents to use TaskLedger as the source of truth for choosing,
+creating, claiming, tracking, handing off, and closing work. By default, writes
+only to stdout and never edits files for you. Commands in the snippet are
+formatted as Markdown code spans, for example `tl ready --json`.
 
 With `--update`, append or refresh a marked TaskLedger workflow block in
 existing agent instruction files: `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`.

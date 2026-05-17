@@ -18,15 +18,19 @@ Feature: Print recommended agent instructions
     Then the output contains these snippets:
       | snippet                                                                   |
       | Set `TL_ACTOR` once at the start of your session                            |
+      | Treat TaskLedger as the source of truth                                      |
+      | Do not begin implementation from chat instructions alone                     |
       | `tl ready --tag <role> --json`                                              |
+      | `tl create "<title>" -d "<description>"`                                  |
       | `tl history <task-id>`                                                       |
+      | `tl claim <task-id>` before making code, doc, config, or test changes        |
       | Re-run `tl claim <task-id>` periodically on long work                        |
       | `tl cancel <task-id> -m "<reason>"`                                         |
       | `tl block <task-id> -m "<blocker>"`                                         |
       | `tl pending <task-id> --question "..."`                                     |
       | `tl release <task-id>`                                                       |
       | check the current `@implemented` set with `make bdd`                         |
-      | create a follow-up task with `tl create` rather than silently expanding scope |
+      | create it with `tl create` instead of silently expanding scope               |
 
   Scenario: Running agents does not modify any existing AGENTS.md
     Given the file "AGENTS.md" exists with content "# My Project"

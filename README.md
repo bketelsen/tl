@@ -15,8 +15,11 @@ No daemon. No hidden database. No automatic push. No AGENTS.md magic.
 
 ```sh
 brew tap aholbreich/taskledger
-brew install taskledger
+brew install taskledger           # latest stable release
+brew install --HEAD taskledger    # or: build from current main
 ```
+
+Prebuilt binaries are available for **macOS (Intel + Apple Silicon)** and **Linux (amd64 + arm64)**.
 
 ### From source
 

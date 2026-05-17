@@ -96,6 +96,7 @@ func (w *world) outputFormatsCommandsAsMarkdownCodeSpans() error {
 		"`tl ready --tag <role> --json`",
 		"`tl show <task-id>`",
 		"`tl history <task-id>`",
+		"`tl create \"<title>\" -d \"<description>\"`",
 		"`tl claim <task-id>`",
 		"`tl note <task-id> -m \"...\"`",
 		"`tl close <task-id>`",

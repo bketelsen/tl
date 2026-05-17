@@ -1,6 +1,6 @@
 ## TaskLedger Workflow
 
-This repository uses TaskLedger (`tl`) for local task coordination between humans and agents.
+This repository uses TaskLedger (`tl`) for local task coordination between humans and agents. Treat TaskLedger as the source of truth for all non-trivial work: planning, claiming, progress notes, blockers, handoffs, and completion.
 
 Set `TL_ACTOR` once at the start of your session so you don't need `--actor` on each command:
 
@@ -8,20 +8,25 @@ Set `TL_ACTOR` once at the start of your session so you don't need `--actor` on 
 export TL_ACTOR=claude-code:<purpose>
 ```
 
-When starting work:
+Mandatory workflow:
 
-1. Pick a task:
-   - `tl ready --json` for unclaimed work, or `tl ready --tag <role> --json` to filter by role-ish tags.
-   - `tl show <task-id>` when handed a specific task.
-   - `tl history <task-id>` if the task was previously worked on; read prior notes before starting.
-2. Claim it before editing files:
-   `tl claim <task-id>`
-3. Inspect the task details:
-   `tl show <task-id>`
-4. Do the work. Re-run `tl claim <task-id>` periodically on long work — it extends the lease (heartbeat pattern).
-   Record important context, decisions, blockers, or handoff notes:
-   `tl note <task-id> -m "..."`
-5. Pick the correct exit:
+1. Start from TaskLedger.
+   - Run `tl ready --json` to find unclaimed work, or `tl ready --tag <role> --json` to filter by role-ish tags.
+   - If the human hands you a task, run `tl show <task-id>` and `tl history <task-id>` before editing.
+   - Do not begin implementation from chat instructions alone if there is no matching TaskLedger task.
+2. Ensure every work item has a task.
+   - If no suitable task exists, create one with `tl create "<title>" -d "<description>"` before editing files.
+   - If your work uncovers a separable follow-up, create it with `tl create` instead of silently expanding scope.
+3. Claim before editing.
+   - Run `tl claim <task-id>` before making code, doc, config, or test changes.
+   - Do **not** work on a task claimed by another active actor unless explicitly told.
+4. Re-check context after claiming.
+   - Run `tl show <task-id>` to confirm scope, status, dependencies, and notes.
+   - Run `tl history <task-id>` if there are prior events, stale claims, or handoff context.
+5. Record progress in TaskLedger while working.
+   - Re-run `tl claim <task-id>` periodically on long work — it extends the lease (heartbeat pattern).
+   - Use `tl note <task-id> -m "..."` for meaningful progress, decisions, failed approaches, blockers, test results, and handoff context.
+6. End every session with an explicit TaskLedger state.
    - `tl close <task-id>` — work is done and verified.
    - `tl cancel <task-id> -m "<reason>"` — work won't be done.
    - `tl block <task-id> -m "<blocker>"` — external blocker; claim is released.
@@ -32,10 +37,8 @@ When starting work:
 
 Rules:
 
-- Do **not** work on a task claimed by another active actor unless explicitly told.
-- If your work uncovers a separable piece of work, create a follow-up task with `tl create` rather than silently expanding scope.
 - Prefer tasks from `tl ready`; blocked, pending, done, cancelled, or actively claimed tasks are not ready.
-- Leave notes for partial progress, failed approaches, decisions, and handoffs.
+- Use `--json` for automation and parsing (`tl ready --json`, `tl show <task-id> --json`, `tl history <task-id> --json`).
+- Leave notes for partial progress, failed approaches, decisions, test results, blockers, and handoffs.
 - Do **not** edit `.taskledger/events.jsonl` manually.
-- Ask before editing `AGENTS.md` or other project instruction files.
 - If `.taskledger/` is missing, ask the human whether to run `tl init`.
