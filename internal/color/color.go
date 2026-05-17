@@ -12,13 +12,16 @@ const (
 	ModeNever  = "never"
 	ModeAlways = "always"
 
-	Reset   = "\x1b[0m"
-	Red     = "\x1b[31m"
-	Green   = "\x1b[32m"
-	Yellow  = "\x1b[33m"
-	Magenta = "\x1b[35m"
-	Cyan    = "\x1b[36m"
-	Dim     = "\x1b[2m"
+	Reset      = "\x1b[0m"
+	Bold       = "\x1b[1m"
+	Dim        = "\x1b[2m"
+	Red        = "\x1b[31m"
+	Green      = "\x1b[32m"
+	Yellow     = "\x1b[33m"
+	Blue       = "\x1b[34m"
+	BrightBlue = "\x1b[94m"
+	Magenta    = "\x1b[35m"
+	Cyan       = "\x1b[36m"
 )
 
 // ValidateMode checks the user-facing --color value.
@@ -97,8 +100,33 @@ func Priority(priority string) string {
 	}
 }
 
+func ListPriority(priority string) string {
+	switch priority {
+	case "high":
+		return Apply(Red, priority)
+	case "medium":
+		return Apply(Yellow, priority)
+	case "low":
+		return Apply(Blue, priority)
+	default:
+		return priority
+	}
+}
+
 func ID(id string) string {
 	return Apply(Cyan, id)
+}
+
+func FieldLabel(label string) string {
+	return Apply(Dim, label)
+}
+
+func FieldValue(value string) string {
+	return Apply(Bold, value)
+}
+
+func MarkdownHeading(heading string) string {
+	return Apply(BrightBlue, heading)
 }
 
 func ClosedListLine(line string) string {

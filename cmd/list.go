@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -33,6 +34,7 @@ func newListCmd() *cobra.Command {
 				return err
 			}
 			tasks = filterListTasks(tasks, includeAll, claimedBy, status, mine, tag)
+			sortTasks(tasks)
 
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
@@ -50,8 +52,8 @@ func newListCmd() *cobra.Command {
 				return err
 			}
 			out := rendered.String()
-			if includeAll && commandColorEnabled(cmd) {
-				out = colorClosedListRows(out, tasks)
+			if useColor := commandColorEnabled(cmd); useColor {
+				out = colorListRows(out, tasks, includeAll)
 			}
 			_, err = fmt.Fprint(cmd.OutOrStdout(), out)
 			return err
@@ -98,12 +100,13 @@ func isClosedListStatus(status string) bool {
 	return status == "done" || status == "cancelled"
 }
 
-func colorClosedListRows(rendered string, tasks []*task.Task) string {
+func colorListRows(rendered string, tasks []*task.Task, dimClosed bool) string {
 	lines := strings.Split(rendered, "\n")
 	var b strings.Builder
 	for i, line := range lines {
-		if i > 0 && i-1 < len(tasks) && isClosedListStatus(tasks[i-1].Status) && line != "" {
-			line = colorClosedListLine(true, line)
+		if i > 0 && i-1 < len(tasks) && line != "" {
+			t := tasks[i-1]
+			line = colorListRow(line, t, dimClosed && isClosedListStatus(t.Status))
 		}
 		b.WriteString(line)
 		if i < len(lines)-1 {
@@ -111,6 +114,35 @@ func colorClosedListRows(rendered string, tasks []*task.Task) string {
 		}
 	}
 	return b.String()
+}
+
+func colorListRow(line string, t *task.Task, dim bool) string {
+	priorityStart := listPriorityStart(line, t)
+	if priorityStart < 0 {
+		return colorClosedListLine(dim, line)
+	}
+	priorityEnd := priorityStart + len(t.Priority)
+	prefix := line[:priorityStart]
+	priority := line[priorityStart:priorityEnd]
+	suffix := line[priorityEnd:]
+
+	if dim {
+		return colorDimCode() + prefix + colorListPriority(true, priority) + colorDimCode() + suffix + colorResetCode()
+	}
+	return prefix + colorListPriority(true, priority) + suffix
+}
+
+func listPriorityStart(line string, t *task.Task) int {
+	statusStart := strings.Index(line, t.Status)
+	if statusStart < 0 {
+		return -1
+	}
+	searchStart := statusStart + len(t.Status)
+	priorityOffset := strings.Index(line[searchStart:], t.Priority)
+	if priorityOffset < 0 {
+		return -1
+	}
+	return searchStart + priorityOffset
 }
 
 func listClaimActor(t *task.Task) string {
@@ -135,4 +167,49 @@ func taskHasTag(t *task.Task, tag string) bool {
 		}
 	}
 	return false
+}
+
+// statusSortOrder maps each status to a numeric rank (lower = appears first).
+var statusSortOrder = map[string]int{
+	"pending_human": 0,
+	"blocked":       1,
+	"in_progress":   2,
+	"open":          3,
+	"done":          4,
+	"cancelled":     5,
+}
+
+func statusRank(s string) int {
+	if r, ok := statusSortOrder[s]; ok {
+		return r
+	}
+	return 99
+}
+
+// prioritySortRank maps priorities to numeric order (lower = appears first).
+func prioritySortRank(priority string) int {
+	switch priority {
+	case "high":
+		return 0
+	case "medium":
+		return 1
+	case "low":
+		return 2
+	default:
+		return 99
+	}
+}
+
+// sortTasks orders tasks by status, then priority, then creation date (oldest first).
+func sortTasks(tasks []*task.Task) {
+	sort.Slice(tasks, func(i, j int) bool {
+		a, b := tasks[i], tasks[j]
+		if sa, sb := statusRank(a.Status), statusRank(b.Status); sa != sb {
+			return sa < sb
+		}
+		if pa, pb := prioritySortRank(a.Priority), prioritySortRank(b.Priority); pa != pb {
+			return pa < pb
+		}
+		return a.CreatedAt.Before(b.CreatedAt)
+	})
 }

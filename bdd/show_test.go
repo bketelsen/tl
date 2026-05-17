@@ -21,6 +21,7 @@ func initializeShowSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^a task "([^"]*)" titled "([^"]*)" with status "([^"]*)" and priority "([^"]*)"$`, w.taskWithTitleStatusAndPriority)
 	ctx.Step(`^"([^"]*)" depends on "([^"]*)"$`, w.taskDependsOn)
 	ctx.Step(`^"([^"]*)" does not depend on "([^"]*)"$`, w.taskDoesNotDependOn)
+	ctx.Step(`^"([^"]*)" has a description "([^"]*)"$`, w.taskHasDescription)
 	ctx.Step(`^"([^"]*)" has a note from "([^"]*)" saying "([^"]*)"$`, w.taskHasNote)
 	ctx.Step(`^no task with identifier "([^"]*)" exists$`, w.noTaskWithIdentifierExists)
 	ctx.Step(`^a task "([^"]*)" with no dependencies$`, w.taskWithNoDependencies)
@@ -103,6 +104,15 @@ func (w *world) taskDoesNotDependOn(id, dep string) error {
 		}
 	}
 	return nil
+}
+
+func (w *world) taskHasDescription(id, description string) error {
+	t, err := loadFixtureTask(id)
+	if err != nil {
+		return err
+	}
+	t.Body = "## Description\n\n" + description + "\n"
+	return writeFixtureTask(t)
 }
 
 func (w *world) taskHasNote(id, actor, message string) error {
@@ -231,8 +241,14 @@ func colorCode(colorName string) string {
 		return internalcolor.Yellow
 	case "magenta":
 		return internalcolor.Magenta
+	case "blue":
+		return internalcolor.Blue
+	case "bright blue":
+		return internalcolor.BrightBlue
 	case "cyan":
 		return internalcolor.Cyan
+	case "bold":
+		return internalcolor.Bold
 	case "dim":
 		return internalcolor.Dim
 	default:

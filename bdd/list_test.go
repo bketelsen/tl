@@ -28,7 +28,7 @@ func initializeListSteps(ctx *godog.ScenarioContext, w *world) {
 
 func (w *world) followingTasksExist(table *godog.Table) error {
 	allowedColumns := map[string]bool{
-		"id": true, "status": true, "priority": true, "claimed by": true, "title": true, "tags": true,
+		"id": true, "status": true, "priority": true, "claimed by": true, "title": true, "tags": true, "created at": true,
 	}
 	for _, header := range table.Rows[0].Cells {
 		if !allowedColumns[header.Value] {
@@ -58,12 +58,21 @@ func (w *world) followingTasksExist(table *godog.Table) error {
 			title = id
 		}
 
+		createdAt := fixtureTime
+		if ca := values["created at"]; ca != "" {
+			d, err := time.ParseDuration(ca)
+			if err != nil {
+				return fmt.Errorf("task row %d: invalid created at duration %q: %w", rowIdx+1, ca, err)
+			}
+			createdAt = fixtureTime.Add(d)
+		}
+
 		fixture := &task.Task{
 			ID:        id,
 			Title:     title,
 			Status:    status,
 			Priority:  priority,
-			CreatedAt: fixtureTime,
+			CreatedAt: createdAt,
 			UpdatedAt: fixtureTime,
 			CreatedBy: "human",
 			DependsOn: []string{},

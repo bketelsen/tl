@@ -58,20 +58,36 @@ Feature: List tasks in the ledger
     Then the output colorizes the line for "task-def456" with "dim"
     And the output colorizes the line for "task-ghi789" with "dim"
 
-  Scenario: Listing tasks orders active tasks by priority and identifier
+  Scenario: Listing tasks with forced color highlights priority values
     Given the following tasks exist:
-      | id          | status | priority | claimed by | title                        |
-      | task-ccc333 | open   | low      | human      | Document login flow          |
-      | task-bbb222 | open   | high     | codex      | Add login form validation    |
-      | task-aaa111 | open   | high     | pi:1       | Refactor auth error messages |
-      | task-ddd444 | open   | medium   | codex      | Review login copy            |
+      | id          | status | priority | title                  |
+      | task-abc123 | open   | high     | High priority task     |
+      | task-def456 | open   | medium   | Medium priority task   |
+      | task-ghi789 | open   | low      | Low priority task      |
+    When the developer runs `tl --color=always list`
+    Then the output colorizes "high" with "red"
+    And the output colorizes "medium" with "yellow"
+    And the output colorizes "low" with "blue"
+
+  Scenario: Listing tasks orders by status, then priority, then creation date (oldest first)
+    Given the following tasks exist:
+      | id          | status        | priority | created at | title   |
+      | task-aaa111 | in_progress   | high     | -1h        | Alpha   |
+      | task-bbb222 | open          | low      |            | Bravo   |
+      | task-ccc333 | pending_human | high     | -30m       | Charlie |
+      | task-ddd444 | open          | high     | -2h        | Delta   |
+      | task-eee555 | blocked       | medium   | -15m       | Echo    |
+      | task-fff666 | in_progress   | high     | -3h        | Foxtrot |
+      | task-ggg777 | done          | high     | -5h        | Golf    |
     When the developer runs `tl list`
     Then the listed task identifiers appear in this order:
       | id          |
-      | task-aaa111 |
-      | task-bbb222 |
-      | task-ddd444 |
       | task-ccc333 |
+      | task-eee555 |
+      | task-fff666 |
+      | task-aaa111 |
+      | task-ddd444 |
+      | task-bbb222 |
 
   Scenario: Listing tasks can be filtered by claim actor
     Given the following tasks exist:

@@ -45,31 +45,35 @@ func newShowCmd() *cobra.Command {
 }
 
 func printTaskDetail(out interface{ Write([]byte) (int, error) }, t *task.Task, useColor bool) {
-	fmt.Fprintf(out, "ID: %s\n", t.ID)
-	fmt.Fprintf(out, "Title: %s\n", t.Title)
-	fmt.Fprintf(out, "Status: %s\n", colorStatus(useColor, t.Status))
-	fmt.Fprintf(out, "Priority: %s\n", colorPriority(useColor, t.Priority))
+	printTaskField(out, useColor, "ID", t.ID)
+	printTaskField(out, useColor, "Title", t.Title)
+	printTaskField(out, useColor, "Status", colorStatus(useColor, t.Status))
+	printTaskField(out, useColor, "Priority", colorPriority(useColor, t.Priority))
 
 	if len(t.DependsOn) == 0 {
-		fmt.Fprintln(out, "Depends On: none")
+		printTaskField(out, useColor, "Depends On", "none")
 	} else {
-		fmt.Fprintln(out, "Depends On:")
+		fmt.Fprintf(out, "%s:\n", colorFieldLabel(useColor, "Depends On"))
 		for _, id := range t.DependsOn {
-			fmt.Fprintf(out, "  - %s\n", id)
+			fmt.Fprintf(out, "  - %s\n", colorFieldValue(useColor, id))
 		}
 	}
 
 	if t.Claim.Actor == nil {
-		fmt.Fprintln(out, "Claim: none")
+		printTaskField(out, useColor, "Claim", "none")
 	} else {
-		fmt.Fprintf(out, "Claim: %s\n", *t.Claim.Actor)
+		printTaskField(out, useColor, "Claim", *t.Claim.Actor)
 	}
 
 	if strings.TrimSpace(t.Body) != "" {
 		fmt.Fprintln(out)
-		fmt.Fprint(out, t.Body)
+		fmt.Fprint(out, colorMarkdownHeadings(useColor, t.Body))
 		if !strings.HasSuffix(t.Body, "\n") {
 			fmt.Fprintln(out)
 		}
 	}
+}
+
+func printTaskField(out interface{ Write([]byte) (int, error) }, useColor bool, label, value string) {
+	fmt.Fprintf(out, "%s: %s\n", colorFieldLabel(useColor, label), colorFieldValue(useColor, value))
 }

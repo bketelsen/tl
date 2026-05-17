@@ -31,6 +31,14 @@ Feature: Show a single task in detail
     Then the output colorizes "blocked" with "red"
     And the output colorizes "high" with "red"
 
+  Scenario: Showing a task with forced color styles labels, values, and Markdown headings
+    Given a task "task-abc123" titled "Fix production outage" with status "open" and priority "medium"
+    And "task-abc123" has a description "Investigate failing health checks."
+    When the developer runs `tl --color=always show task-abc123`
+    Then the output colorizes "ID" with "dim"
+    And the output colorizes "task-abc123" with "bold"
+    And the output colorizes "## Description" with "bright blue"
+
   Scenario: Showing a task with JSON output does not emit color
     Given a task "task-abc123" titled "Fix production outage" with status "blocked" and priority "high"
     When the developer runs `tl --color=always show task-abc123 --json`

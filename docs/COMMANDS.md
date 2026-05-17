@@ -42,7 +42,7 @@ List active tasks in the ledger, sorted by priority then identifier. Closed
 statuses (`done`, `cancelled`) are hidden by default. Passing `--status`
 with a closed status reveals matching tasks without needing `--all`. Human
 output includes `ID`, `Status`, `Priority`, `Claimed By`, and `Title`.
-When color is enabled, `--all` dims closed-task rows.
+When color is enabled, priority values are colored (`high` red, `medium` yellow, `low` blue), and `--all` dims closed-task rows.
 
 ```
 -a, --all                Include closed tasks (done and cancelled)
@@ -57,7 +57,8 @@ When color is enabled, `--all` dims closed-task rows.
 
 Show a task in detail. Human output includes the identifier, title, status,
 priority, dependencies, claim state, and Markdown body content such as notes.
-When color is enabled, status and priority values are colorized.
+When color is enabled, field labels are dimmed, field values are bold,
+status/priority values are colorized, and Markdown headings in the body are bright blue.
 Accepts both full IDs (`task-k5g`) and bare short codes (`k5g`).
 
 ```
