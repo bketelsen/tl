@@ -13,9 +13,15 @@ No daemon. No hidden database. No automatic push. No AGENTS.md magic.
 ### Homebrew (macOS / Linux)
 
 ```sh
-brew tap aholbreich/taskledger
-brew install taskledger           # latest stable release
-brew install --HEAD taskledger    # or: build from current main
+brew install aholbreich/tap/tl           # latest stable release
+brew install --HEAD aholbreich/tap/tl    # or: build from current main
+```
+
+If you install multiple tools from the same tap, you can tap once:
+
+```sh
+brew tap aholbreich/tap
+brew install tl
 ```
 
 Prebuilt binaries are available for **macOS (Intel + Apple Silicon)** and **Linux (amd64 + arm64)**.

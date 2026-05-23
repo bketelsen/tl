@@ -65,3 +65,46 @@ jobs:
             tl-tool ${{ github.ref_name }} - multi-platform binaries.
           files: |
             dist/**/*
+
+  update-homebrew-tap:
+    needs: release
+    runs-on: ubuntu-latest
+    # Set repository variable UPDATE_HOMEBREW_TAP=true and secret
+    # HOMEBREW_TAP_TOKEN to enable automatic tap updates.
+    if: ${{ vars.UPDATE_HOMEBREW_TAP == 'true' }}
+    steps:
+      - name: Checkout tl
+        uses: actions/checkout@v4
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checkout homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: aholbreich/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update tl formula
+        env:
+          VERSION: ${{ github.ref_name }}
+          DIST_DIR: dist
+          TAP_DIR: homebrew-tap
+        run: bash .github/scripts/update-homebrew-tap.sh
+
+      - name: Commit homebrew tap update
+        working-directory: homebrew-tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/tl.rb
+          if git diff --cached --quiet; then
+            echo "Formula/tl.rb is already current"
+          else
+            git commit -m "tl ${{ github.ref_name }}"
+            git push
+          fi
