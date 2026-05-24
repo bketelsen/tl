@@ -218,7 +218,7 @@ func (w *world) jsonStringValue(field string) (string, error) {
 // --- shared utilities -----------------------------------------------------
 
 func loadOnlyTask() (*task.Task, error) {
-	entries, err := os.ReadDir(filepath.Join(".taskledger", "tasks"))
+	entries, err := os.ReadDir(filepath.Join(".tl", "tasks"))
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +238,7 @@ func loadOnlyTask() (*task.Task, error) {
 }
 
 func loadFixtureTask(id string) (*task.Task, error) {
-	data, err := os.ReadFile(filepath.Join(".taskledger", "tasks", id+".md"))
+	data, err := os.ReadFile(filepath.Join(".tl", "tasks", id+".md"))
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +254,7 @@ func assertEventRecordedBy(eventName, taskID, actor string) error {
 }
 
 func assertEventRecordedMatching(eventName, taskID, actor string) error {
-	f, err := os.Open(filepath.Join(".taskledger", "events.jsonl"))
+	f, err := os.Open(filepath.Join(".tl", "events.jsonl"))
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func writeFixtureTask(t *task.Task) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(".taskledger", "tasks", t.ID+".md"), data, 0o644)
+	return os.WriteFile(filepath.Join(".tl", "tasks", t.ID+".md"), data, 0o644)
 }
 
 func lineContaining(s, needle string) (string, bool) {

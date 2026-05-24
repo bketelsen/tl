@@ -15,7 +15,7 @@ Global flags:
 
 ## `tl init`
 
-Initialize a `.taskledger/` ledger in the current directory.
+Initialize a `.tl/` ledger in the current directory.
 
 ```
 (no flags)
@@ -207,7 +207,7 @@ eligible for the ready queue again. Rejects tasks that are not blocked.
 
 ## `tl history [TASK_ID]`
 
-Print events recorded in `.taskledger/events.jsonl`. With a `TASK_ID`,
+Print events recorded in `.tl/events.jsonl`. With a `TASK_ID`,
 filters to that task's audit trail. With `--since <duration>`, filters to
 events within the given window (e.g. `24h`, `7d`) across all tasks —
 useful for "what did the team do today?" review. At least one of
@@ -259,16 +259,16 @@ Missing files are not created.
 ## Setup errors
 
 Commands that need ledger state are non-interactive for agent safety. If
-`.taskledger/` is missing, they exit with code `1` and print:
+`.tl/` is missing, they exit with code `1` and print:
 
 ```text
 tl is not initialized in this repository.
-Run `tl init` from the repository root to create .taskledger/.
+Run `tl init` from the repository root to create .tl/.
 ```
 
 ## Lock contention
 
-Mutating commands acquire an advisory `flock(2)` on `.taskledger/.lock` for
+Mutating commands acquire an advisory `flock(2)` on `.tl/.lock` for
 the duration of the read-modify-write. If another `tl` process holds the
 lock for more than 5 seconds, the command exits with code `7` and reports
 the contention. Re-run the command; the underlying race that exit code 7

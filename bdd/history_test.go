@@ -30,7 +30,7 @@ func initializeHistorySteps(ctx *godog.ScenarioContext, w *world) {
 }
 
 func recordFixtureEvent(eventName, taskID, actor string, eventTime time.Time) error {
-	return events.Append(".taskledger", events.Event{
+	return events.Append(".tl", events.Event{
 		Time:   eventTime,
 		Event:  eventName,
 		TaskID: taskID,

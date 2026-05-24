@@ -26,7 +26,7 @@ and `tl block` release the active claim when they flip status; the
 collaborating actor re-claims after `tl resolve` or `tl unblock` if they
 want to resume.
 
-The task file is the current state; `.taskledger/events.jsonl` is the
+The task file is the current state; `.tl/events.jsonl` is the
 append-only audit trail. Every mutating command appends one JSON line;
 `tl history` reads them back.
 
@@ -38,7 +38,7 @@ actor — there is no separate heartbeat command.
 ## Storage
 
 ```
-.taskledger/
+.tl/
   config.yaml      # defaults
   tasks/
     task-<3>.md    # one file per task (Markdown + YAML frontmatter)

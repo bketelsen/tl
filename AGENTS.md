@@ -14,7 +14,7 @@ serve as the binding contract for unimplemented commands.
 - Adding a command: extend its `.feature`, add step defs in `bdd/bdd_test.go`,
   implement the cobra command under `cmd/<name>.go` (plus any needed package
   under `internal/`), then tag the feature `@implemented`.
-- Mutating commands append a JSON line to `.taskledger/events.jsonl`. Read
+- Mutating commands append a JSON line to `.tl/events.jsonl`. Read
   commands must support `--json`.
 
 ## Gherkin / BDD tests
@@ -68,9 +68,9 @@ Rules:
 - If your work uncovers a separable piece of work, create a follow-up task with `tl create` rather than silently expanding scope.
 - Prefer tasks from `tl ready`; blocked, pending, done, cancelled, or actively claimed tasks are not ready.
 - Leave notes for partial progress, failed approaches, decisions, and handoffs.
-- Do **not** edit `.taskledger/events.jsonl` manually.
+- Do **not** edit `.tl/events.jsonl` manually.
 - Create new task/story/bug when new work is defined. Always check whether its already covered by existing tasks.
-- If `.taskledger/` is missing, ask the human whether to run `tl init`.
+- If `.tl/` is missing, ask the human whether to run `tl init`.
 
 
 ## Implementation notes
@@ -82,13 +82,13 @@ Rules:
   realistic ceiling for the project sizes the task ledger tool targets.
 - **Atomic writes:** task files write to `<id>.md.tmp` and `rename` over the
   target.
-- **Locking:** an advisory `flock(2)` on `.taskledger/.lock` (via
+- **Locking:** an advisory `flock(2)` on `.tl/.lock` (via
   `github.com/gofrs/flock`) guards mutating commands. Acquired once at
   command start, held across the read-modify-write, released on exit (or
   via deferred unlock). Lock contention surfaces as exit code 7 after a
   5-second wait. Read commands need no lock — task files use `.tmp` +
   atomic `rename`, and `events.jsonl` uses `O_APPEND`.
 - **Repository detection:** commands walk upward from CWD to find
-  `.taskledger/`.
+  `.tl/`.
 
 ---

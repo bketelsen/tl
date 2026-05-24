@@ -1,4 +1,4 @@
-// Package repo manages the on-disk .taskledger layout: locating an existing
+// Package repo manages the on-disk .tl layout: locating an existing
 // ledger and creating a fresh one.
 package repo
 
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	LedgerDir     = ".taskledger"
+	LedgerDir     = ".tl"
 	ConfigFile    = "config.yaml"
 	TasksDir      = "tasks"
 	EventsJournal = "events.jsonl"
@@ -27,7 +27,7 @@ actors:
   require_actor: true
 `
 
-// Init creates the .taskledger layout under dir and returns the absolute path
+// Init creates the .tl layout under dir and returns the absolute path
 // to the created ledger directory. It refuses to touch an existing ledger.
 func Init(dir string) (string, error) {
 	ledger := filepath.Join(dir, LedgerDir)

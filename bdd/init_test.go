@@ -24,8 +24,8 @@ func initializeInitSteps(ctx *godog.ScenarioContext, w *world) {
 const sentinelConfig = "# existing config — DO NOT TOUCH\n"
 
 func (w *world) currentDirHasNoLedger() error {
-	if _, err := os.Stat(".taskledger"); err == nil {
-		return fmt.Errorf(".taskledger already exists in fresh temp dir (setup bug)")
+	if _, err := os.Stat(".tl"); err == nil {
+		return fmt.Errorf(".tl already exists in fresh temp dir (setup bug)")
 	} else if !os.IsNotExist(err) {
 		return err
 	}
@@ -33,14 +33,14 @@ func (w *world) currentDirHasNoLedger() error {
 }
 
 func (w *world) currentDirAlreadyHasLedger() error {
-	if err := os.MkdirAll(filepath.Join(".taskledger", "tasks"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(".tl", "tasks"), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(".taskledger", "config.yaml"), []byte(sentinelConfig), 0o644)
+	return os.WriteFile(filepath.Join(".tl", "config.yaml"), []byte(sentinelConfig), 0o644)
 }
 
 func (w *world) dirContainsConfigFile() error {
-	info, err := os.Stat(filepath.Join(".taskledger", "config.yaml"))
+	info, err := os.Stat(filepath.Join(".tl", "config.yaml"))
 	if err != nil {
 		return fmt.Errorf("config file missing: %w", err)
 	}
@@ -51,7 +51,7 @@ func (w *world) dirContainsConfigFile() error {
 }
 
 func (w *world) dirContainsEmptyTasksFolder() error {
-	entries, err := os.ReadDir(filepath.Join(".taskledger", "tasks"))
+	entries, err := os.ReadDir(filepath.Join(".tl", "tasks"))
 	if err != nil {
 		return fmt.Errorf("tasks folder missing: %w", err)
 	}
@@ -62,7 +62,7 @@ func (w *world) dirContainsEmptyTasksFolder() error {
 }
 
 func (w *world) dirContainsEmptyEventJournal() error {
-	info, err := os.Stat(filepath.Join(".taskledger", "events.jsonl"))
+	info, err := os.Stat(filepath.Join(".tl", "events.jsonl"))
 	if err != nil {
 		return fmt.Errorf("events journal missing: %w", err)
 	}
@@ -87,7 +87,7 @@ func (w *world) cmdReportsAlreadyExists() error {
 }
 
 func (w *world) existingConfigUnchanged() error {
-	data, err := os.ReadFile(filepath.Join(".taskledger", "config.yaml"))
+	data, err := os.ReadFile(filepath.Join(".tl", "config.yaml"))
 	if err != nil {
 		return err
 	}

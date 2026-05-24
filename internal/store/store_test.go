@@ -44,7 +44,7 @@ func TestNormalizeID(t *testing.T) {
 
 func TestNewIDFormat(t *testing.T) {
 	dir := t.TempDir()
-	ledger := dir + "/.taskledger"
+	ledger := dir + "/.tl"
 	if err := os.MkdirAll(ledger+"/tasks", 0755); err != nil {
 		t.Fatalf("create tasks dir: %v", err)
 	}

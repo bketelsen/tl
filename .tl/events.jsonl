@@ -49,3 +49,8 @@
 {"time":"2026-05-24T16:43:16Z","event":"refined","task_id":"task-pnr"}
 {"time":"2026-05-24T16:43:50Z","event":"refined","task_id":"task-pnr"}
 {"time":"2026-05-24T16:44:01Z","event":"refined","task_id":"task-pnr"}
+{"time":"2026-05-24T16:45:24Z","event":"created","task_id":"task-ro8","actor":"human"}
+{"time":"2026-05-24T16:45:26Z","event":"claimed","task_id":"task-ro8","actor":"pi:rename-ledger-dir"}
+{"time":"2026-05-24T16:45:59Z","event":"refined","task_id":"task-ro8"}
+{"time":"2026-05-24T16:46:20Z","event":"note_added","task_id":"task-ro8","actor":"pi:rename-ledger-dir"}
+{"time":"2026-05-24T16:46:20Z","event":"closed","task_id":"task-ro8","actor":"pi:rename-ledger-dir"}

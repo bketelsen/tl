@@ -61,7 +61,7 @@ func randomShortID() (string, error) {
 	return "task-" + string(buf), nil
 }
 
-// LedgerDir walks upward from start to find the nearest .taskledger directory.
+// LedgerDir walks upward from start to find the nearest .tl directory.
 func LedgerDir(start string) (string, error) {
 	abs, err := filepath.Abs(start)
 	if err != nil {

@@ -14,7 +14,7 @@ func requireLedger() (string, error) {
 	}
 	ledger, err := store.LedgerDir(wd)
 	if errors.Is(err, store.ErrLedgerNotFound) {
-		return "", NewExitError(1, "tl is not initialized in this repository.\nRun `tl init` from the repository root to create .taskledger/.")
+		return "", NewExitError(1, "tl is not initialized in this repository.\nRun `tl init` from the repository root to create .tl/.")
 	}
 	if err != nil {
 		return "", err

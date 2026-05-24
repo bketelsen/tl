@@ -1,4 +1,4 @@
-// Package events appends audit records to .taskledger/events.jsonl.
+// Package events appends audit records to .tl/events.jsonl.
 package events
 
 import (

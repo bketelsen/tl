@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config holds values read from .taskledger/config.yaml.
+// Config holds values read from .tl/config.yaml.
 type Config struct {
 	DefaultClaimTTL string       `yaml:"default_claim_ttl"`
 	DefaultActor    string       `yaml:"default_actor"`

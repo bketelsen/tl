@@ -40,5 +40,5 @@ Rules:
 - Prefer tasks from `tl ready`; blocked, pending, done, cancelled, or actively claimed tasks are not ready.
 - Use `--json` for automation and parsing (`tl ready --json`, `tl show <task-id> --json`, `tl history <task-id> --json`).
 - Leave notes for partial progress, failed approaches, decisions, test results, blockers, and handoffs.
-- Do **not** edit `.taskledger/events.jsonl` manually.
-- If `.taskledger/` is missing, ask the human whether to run `tl init`.
+- Do **not** edit `.tl/events.jsonl` manually.
+- If `.tl/` is missing, ask the human whether to run `tl init`.

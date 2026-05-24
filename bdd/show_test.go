@@ -140,7 +140,7 @@ func (w *world) taskHasNoDependencies(id string) error {
 }
 
 func (w *world) noTaskWithIdentifierExists(id string) error {
-	if err := os.Remove(filepath.Join(".taskledger", "tasks", id+".md")); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := os.Remove(filepath.Join(".tl", "tasks", id+".md")); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	return nil

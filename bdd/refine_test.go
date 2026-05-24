@@ -101,7 +101,7 @@ func (w *world) noSystemEditorConfigured() error {
 }
 
 func (w *world) noEventRecordedFor(eventName, taskID string) error {
-	f, err := os.Open(filepath.Join(".taskledger", "events.jsonl"))
+	f, err := os.Open(filepath.Join(".tl", "events.jsonl"))
 	if err != nil {
 		return err
 	}

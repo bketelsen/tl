@@ -38,7 +38,7 @@ func (w *world) ledgerInitialized() error {
 }
 
 func (w *world) noTasksExist() error {
-	entries, err := os.ReadDir(filepath.Join(".taskledger", "tasks"))
+	entries, err := os.ReadDir(filepath.Join(".tl", "tasks"))
 	if err != nil {
 		return fmt.Errorf("tasks folder missing: %w", err)
 	}
