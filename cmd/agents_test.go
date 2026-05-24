@@ -7,7 +7,7 @@ import (
 
 func TestMergeAgentsBlockAppendsToExistingContent(t *testing.T) {
 	got := mergeAgentsBlock("# Project")
-	for _, want := range []string{"# Project\n\n", agentsBeginMarker, "## TaskLedger Workflow", agentsEndMarker} {
+	for _, want := range []string{"# Project\n\n", agentsBeginMarker, "## tl workflow", agentsEndMarker} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("mergeAgentsBlock() missing %q; got:\n%s", want, got)
 		}
@@ -25,5 +25,18 @@ func TestMergeAgentsBlockReplacesManagedBlockIdempotently(t *testing.T) {
 	}
 	if strings.Contains(once, "old workflow") {
 		t.Fatalf("mergeAgentsBlock did not replace old managed block; got:\n%s", once)
+	}
+}
+
+func TestMergeAgentsBlockReplacesLegacyManagedBlock(t *testing.T) {
+	input := "# Project\n\n" + legacyAgentsBeginMarker + "\nold workflow\n" + legacyAgentsEndMarker + "\n"
+
+	got := mergeAgentsBlock(input)
+
+	if strings.Contains(got, "old workflow") {
+		t.Fatalf("mergeAgentsBlock did not replace legacy managed block; got:\n%s", got)
+	}
+	if !strings.Contains(got, agentsBeginMarker) || !strings.Contains(got, agentsEndMarker) {
+		t.Fatalf("mergeAgentsBlock did not write current markers; got:\n%s", got)
 	}
 }

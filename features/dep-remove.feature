@@ -5,7 +5,7 @@ Feature: Remove a dependency between tasks
   So that the ready queue reflects updated ordering
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Removing an existing dependency unlinks the two tasks
     Given a task "task-abc123" with no dependencies

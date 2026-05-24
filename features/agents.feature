@@ -2,14 +2,14 @@
 Feature: Print recommended agent instructions
   As a developer setting up an agent-friendly repository
   I want to see or install the recommended AGENTS.md snippet
-  So that I can give agents consistent TaskLedger workflow instructions
+  So that I can give agents consistent tl workflow instructions
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Running agents prints the recommended AGENTS.md snippet to stdout
     When the developer runs `tl agents`
-    Then the output contains a "TaskLedger Workflow" heading
+    Then the output contains a "tl workflow" heading
     And the output describes the ready, claim, show, note, and close steps
     And the output formats task commands as Markdown code spans
 
@@ -18,7 +18,7 @@ Feature: Print recommended agent instructions
     Then the output contains these snippets:
       | snippet                                                                   |
       | Set `TL_ACTOR` once at the start of your session                            |
-      | Treat TaskLedger as the source of truth                                      |
+      | Treat the task ledger as the source of truth                                      |
       | Do not begin implementation from chat instructions alone                     |
       | `tl ready --tag <role> --json`                                              |
       | `tl create "<title>" -d "<description>"`                                  |
@@ -41,9 +41,9 @@ Feature: Print recommended agent instructions
     Given the file "AGENTS.md" exists with content "# My Project"
     And the file "CLAUDE.md" exists with content "# Claude Notes"
     When the developer runs `tl agents --update`
-    Then the file "AGENTS.md" contains "<!-- BEGIN TASKLEDGER WORKFLOW -->"
-    And the file "AGENTS.md" contains "## TaskLedger Workflow"
-    And the file "CLAUDE.md" contains "## TaskLedger Workflow"
+    Then the file "AGENTS.md" contains "<!-- BEGIN TL WORKFLOW -->"
+    And the file "AGENTS.md" contains "## tl workflow"
+    And the file "CLAUDE.md" contains "## tl workflow"
     And the output contains "Updated AGENTS.md"
     And the output contains "Updated CLAUDE.md"
 
@@ -52,9 +52,9 @@ Feature: Print recommended agent instructions
       """
       # My Project
 
-      <!-- BEGIN TASKLEDGER WORKFLOW -->
+      <!-- BEGIN TL WORKFLOW -->
       old workflow text
-      <!-- END TASKLEDGER WORKFLOW -->
+      <!-- END TL WORKFLOW -->
       """
     When the developer runs `tl agents --update`
     Then the file "AGENTS.md" contains "`tl ready --tag <role> --json`"

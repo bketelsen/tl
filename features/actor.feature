@@ -5,7 +5,7 @@ Feature: Actor identity resolution for claims
   So that claims are frictionless while still preventing collisions
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: CLI --actor takes highest priority
     Given environment variable "TL_ACTOR" is "env-agent"

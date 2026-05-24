@@ -21,3 +21,7 @@
 {"time":"2026-05-23T21:03:20Z","event":"claimed","task_id":"task-029","actor":"pi:readme-toc"}
 {"time":"2026-05-23T21:03:40Z","event":"note_added","task_id":"task-029","actor":"pi:readme-toc"}
 {"time":"2026-05-23T21:03:40Z","event":"closed","task_id":"task-029","actor":"pi:readme-toc"}
+{"time":"2026-05-24T15:31:44Z","event":"created","task_id":"task-8ms","actor":"human"}
+{"time":"2026-05-24T15:31:46Z","event":"claimed","task_id":"task-8ms","actor":"pi:rename-taskledger"}
+{"time":"2026-05-24T15:36:20Z","event":"note_added","task_id":"task-8ms","actor":"pi:rename-taskledger"}
+{"time":"2026-05-24T15:36:20Z","event":"closed","task_id":"task-8ms","actor":"pi:rename-taskledger"}

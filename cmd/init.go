@@ -12,7 +12,7 @@ import (
 func newInitCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "init",
-		Short: "Initialize a TaskLedger ledger in the current directory",
+		Short: "Initialize a task ledger in the current directory",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			wd, err := os.Getwd()
 			if err != nil {
@@ -22,7 +22,7 @@ func newInitCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Initialized TaskLedger ledger at %s\n", ledger)
+			fmt.Fprintf(cmd.OutOrStdout(), "Initialized task ledger at %s\n", ledger)
 			return nil
 		},
 	}

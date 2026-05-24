@@ -226,13 +226,13 @@ task frontmatter.
 
 ## `tl agents`
 
-Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. The
-snippet instructs agents to use TaskLedger as the source of truth for choosing,
+Print a recommended `AGENTS.md` snippet for tl-aware agents. The
+snippet instructs agents to use the task ledger as the source of truth for choosing,
 creating, claiming, tracking, handing off, and closing work. By default, writes
 only to stdout and never edits files for you. Commands in the snippet are
 formatted as Markdown code spans, for example `tl ready --json`.
 
-With `--update`, append or refresh a marked TaskLedger workflow block in
+With `--update`, append or refresh a marked tl workflow block in
 existing agent instruction files: `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`.
 Missing files are not created.
 
@@ -247,7 +247,7 @@ Commands that need ledger state are non-interactive for agent safety. If
 `.taskledger/` is missing, they exit with code `1` and print:
 
 ```text
-TaskLedger is not initialized in this repository.
+tl is not initialized in this repository.
 Run `tl init` from the repository root to create .taskledger/.
 ```
 

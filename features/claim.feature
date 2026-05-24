@@ -5,7 +5,7 @@ Feature: Claim a task with a lease
   So that other actors know not to pick up the same work
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Claiming a ready task records the claim and marks it in progress
     Given a ready task "task-abc123" titled "Add login form validation"

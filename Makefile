@@ -1,4 +1,4 @@
-# TaskLedger Makefile — adapted from aholbreich/adr-tool
+# tl Makefile — adapted from aholbreich/adr-tool
 BINARY_NAME := tl
 INSTALL_DIR ?= $(HOME)/bin
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null || echo dev)

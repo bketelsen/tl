@@ -5,7 +5,7 @@ Feature: Close a completed task
   So that the ledger reflects completed work and contributes to the audit trail
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: The claim's actor closes a claimed task
     Given a task "task-abc123" claimed by "claude-code:main"

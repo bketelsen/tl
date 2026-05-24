@@ -5,7 +5,7 @@ Feature: List ready tasks
   So that I can choose what to work on next safely
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: An open task with no dependencies is ready
     Given a task "task-abc123" with status "open" and no dependencies

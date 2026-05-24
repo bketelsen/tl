@@ -1,4 +1,4 @@
-// Package task models a TaskLedger task and its on-disk Markdown+YAML form.
+// Package task models a tl task and its on-disk Markdown+YAML form.
 package task
 
 import (

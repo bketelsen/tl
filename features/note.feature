@@ -5,7 +5,7 @@ Feature: Append a note to a task
   So that other actors can see what was tried, learned, or decided
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: An actor appends a note that records timestamp, actor, and message
     Given a task "task-abc123" titled "Add login form validation"

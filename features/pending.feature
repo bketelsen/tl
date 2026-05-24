@@ -5,7 +5,7 @@ Feature: Mark a task as pending human input
   So that work stops cleanly and the human knows what is being asked
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: An agent marks a task pending_human with a question
     Given a task "task-abc123" claimed by "claude-code:frontend" with an active lease

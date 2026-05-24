@@ -13,8 +13,10 @@ import (
 var agentsSnippet string
 
 const (
-	agentsBeginMarker = "<!-- BEGIN TASKLEDGER WORKFLOW -->"
-	agentsEndMarker   = "<!-- END TASKLEDGER WORKFLOW -->"
+	agentsBeginMarker       = "<!-- BEGIN TL WORKFLOW -->"
+	agentsEndMarker         = "<!-- END TL WORKFLOW -->"
+	legacyAgentsBeginMarker = "<!-- BEGIN " + "TASK" + "LEDGER WORKFLOW -->"
+	legacyAgentsEndMarker   = "<!-- END " + "TASK" + "LEDGER WORKFLOW -->"
 )
 
 var agentInstructionFiles = []string{"AGENTS.md", "CLAUDE.md", "GEMINI.md"}
@@ -32,7 +34,7 @@ func newAgentsCmd() *cobra.Command {
 			return err
 		},
 	}
-	c.Flags().BoolVar(&update, "update", false, "Append or refresh the TaskLedger workflow block in existing agent instruction files")
+	c.Flags().BoolVar(&update, "update", false, "Append or refresh the tl workflow block in existing agent instruction files")
 	return c
 }
 
@@ -68,17 +70,22 @@ func updateAgentInstructionFiles(cmd *cobra.Command) error {
 
 func mergeAgentsBlock(content string) string {
 	block := managedAgentsBlock()
-	start := strings.Index(content, agentsBeginMarker)
-	if start >= 0 {
-		end := strings.Index(content[start:], agentsEndMarker)
-		if end >= 0 {
-			end += start + len(agentsEndMarker)
-			if strings.HasPrefix(content[end:], "\r\n") {
-				end += len("\r\n")
-			} else if strings.HasPrefix(content[end:], "\n") {
-				end++
+	for _, markers := range [][2]string{
+		{agentsBeginMarker, agentsEndMarker},
+		{legacyAgentsBeginMarker, legacyAgentsEndMarker},
+	} {
+		start := strings.Index(content, markers[0])
+		if start >= 0 {
+			end := strings.Index(content[start:], markers[1])
+			if end >= 0 {
+				end += start + len(markers[1])
+				if strings.HasPrefix(content[end:], "\r\n") {
+					end += len("\r\n")
+				} else if strings.HasPrefix(content[end:], "\n") {
+					end++
+				}
+				return content[:start] + block + content[end:]
 			}
-			return content[:start] + block + content[end:]
 		}
 	}
 

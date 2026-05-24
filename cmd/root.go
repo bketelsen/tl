@@ -30,7 +30,7 @@ func NewRootCmd() *cobra.Command {
 	var root *cobra.Command
 	root = &cobra.Command{
 		Use:           "tl",
-		Short:         "TaskLedger — a Git-native task ledger for humans and AI coding agents",
+		Short:         "tl — a Git-native task ledger for humans and AI coding agents",
 		Version:       rootVersion,
 		SilenceUsage:  true,
 		SilenceErrors: false,

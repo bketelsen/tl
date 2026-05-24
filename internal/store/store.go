@@ -30,7 +30,7 @@ var (
 // NewID returns a fresh task identifier of the form "task-<3 alphanumeric>".
 // It retries on collision with an existing task file under ledger and gives up
 // after maxIDAttempts (the 36^3 namespace fills up well before that matters
-// for the project sizes TaskLedger targets).
+// for the project sizes the task ledger tool targets).
 func NewID(ledger string) (string, error) {
 	for attempt := 0; attempt < maxIDAttempts; attempt++ {
 		id, err := randomShortID()

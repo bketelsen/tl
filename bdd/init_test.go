@@ -12,9 +12,9 @@ import (
 // --- init.feature support -------------------------------------------------
 
 func initializeInitSteps(ctx *godog.ScenarioContext, w *world) {
-	ctx.Step(`^the current directory has no TaskLedger ledger$`, w.currentDirHasNoLedger)
-	ctx.Step(`^the current directory already has a TaskLedger ledger$`, w.currentDirAlreadyHasLedger)
-	ctx.Step(`^the directory contains a TaskLedger config file$`, w.dirContainsConfigFile)
+	ctx.Step(`^the current directory has no task ledger$`, w.currentDirHasNoLedger)
+	ctx.Step(`^the current directory already has a task ledger$`, w.currentDirAlreadyHasLedger)
+	ctx.Step(`^the directory contains a task ledger config file$`, w.dirContainsConfigFile)
 	ctx.Step(`^the directory contains an empty tasks folder$`, w.dirContainsEmptyTasksFolder)
 	ctx.Step(`^the directory contains an empty event journal$`, w.dirContainsEmptyEventJournal)
 	ctx.Step(`^the command reports that the ledger already exists$`, w.cmdReportsAlreadyExists)

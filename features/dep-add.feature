@@ -5,7 +5,7 @@ Feature: Add a dependency between tasks
   So that the ready queue reflects real ordering constraints
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Adding a dependency links one task to another
     Given a task "task-abc123" with no dependencies

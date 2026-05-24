@@ -5,7 +5,7 @@ Feature: List tasks in the ledger
   So that I can understand the work that still needs attention
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Listing tasks shows the default table columns for active tasks
     Given the following tasks exist:

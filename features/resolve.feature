@@ -5,7 +5,7 @@ Feature: Resolve a pending task with an answer
   So that the agent can resume work with the needed input
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Resolving a pending task appends the answer and returns the task to open
     Given a task "task-abc123" with status "pending_human"

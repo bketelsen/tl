@@ -4,7 +4,7 @@
 
 ## Context
 
-A product owner using TaskLedger may want to plan multi-agent work in
+A product owner using tl may want to plan multi-agent work in
 advance — for example, "implement", "code review", and "documentation"
 passes for a single feature, each picked up by a differently-configured
 agent. The straightforward way to express this is a dedicated `role` field
@@ -12,7 +12,7 @@ on tasks (or on actors) and gate agent visibility on role match. A related
 move is to introduce a `type: story` with parent/child task relationships
 to capture the planning structure.
 
-Both moves push TaskLedger toward Jira-style hierarchy and role
+Both moves push the task ledger toward Jira-style hierarchy and role
 enforcement, which the PRD explicitly disclaims under "Complex role
 hierarchies" and "not a Jira / Linear / GitHub Issues replacement" (PRD
 §4 Non-goals).

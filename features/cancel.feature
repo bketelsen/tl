@@ -5,7 +5,7 @@ Feature: Cancel a task that will not be done
   So that the ledger reflects intentional abandonment without falsely claiming the work was completed
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: An unclaimed open task can be cancelled with a reason
     Given a task "task-abc123" with status "open"

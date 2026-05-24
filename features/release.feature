@@ -5,7 +5,7 @@ Feature: Release a claim on a task
   So that work does not stall behind an idle claim
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: The claim's actor releases its own claim and the task returns to open
     Given a task "task-abc123" claimed by "claude-code:main" with an active lease

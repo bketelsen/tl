@@ -89,7 +89,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	})
 
 	// Background / shared preconditions
-	ctx.Step(`^an initialized TaskLedger repository$`, w.ledgerInitialized)
+	ctx.Step(`^an initialized task ledger repository$`, w.ledgerInitialized)
 	ctx.Step(`^no tasks exist$`, w.noTasksExist)
 
 	// Shared CLI invocation (handles both "developer" and "agent" actors).

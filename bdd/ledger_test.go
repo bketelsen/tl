@@ -9,7 +9,7 @@ import (
 // --- ledger-required.feature support --------------------------------------
 
 func initializeLedgerRequiredSteps(ctx *godog.ScenarioContext, w *world) {
-	ctx.Step(`^the output reports that TaskLedger is not initialized$`, w.outputReportsLedgerNotInitialized)
+	ctx.Step(`^the output reports that tl is not initialized$`, w.outputReportsLedgerNotInitialized)
 	ctx.Step(`^the output suggests running "([^"]*)"$`, w.outputSuggestsRunning)
 }
 
@@ -18,8 +18,8 @@ func (w *world) outputReportsLedgerNotInitialized() error {
 	if w.cmdErr != nil {
 		combined += "\n" + strings.ToLower(w.cmdErr.Error())
 	}
-	if !strings.Contains(combined, "taskledger") || !strings.Contains(combined, "not initialized") {
-		return fmt.Errorf("output does not report TaskLedger as not initialized; got:\n%s", combined)
+	if !strings.Contains(combined, "tl is not initialized") {
+		return fmt.Errorf("output does not report tl as not initialized; got:\n%s", combined)
 	}
 	return nil
 }

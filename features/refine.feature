@@ -4,7 +4,7 @@ Feature: Refine a task
   So that I can correct mistakes without editing task files by hand
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Refineing the title replaces it and records an event
     Given a task "task-abc123" titled "Add login form"

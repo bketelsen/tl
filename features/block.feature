@@ -5,7 +5,7 @@ Feature: Mark a task blocked by an external condition
   So that other actors know not to pick it up until the blocker is cleared
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: An open task can be marked blocked with a reason
     Given a task "task-abc123" with status "open"

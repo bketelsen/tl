@@ -5,7 +5,7 @@ Feature: Create a task
   So that the work item is visible, addressable, and tracked
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Creating a task records it with default status open
     Given no tasks exist

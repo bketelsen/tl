@@ -5,7 +5,7 @@ Feature: List stale claims
   So that abandoned work can be reclaimed safely
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: A claim past its expiry appears in the stale list
     Given a task "task-abc123" with an expired claim by "claude-code:main"

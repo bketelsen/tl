@@ -5,7 +5,7 @@ Feature: Show a single task in detail
   So that I can understand its full state before acting on it
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: Showing a task prints its identifier, title, status, dependencies, claim, and notes
     Given a task "task-abc123" titled "Add login form validation" with status "open"

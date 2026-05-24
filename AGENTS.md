@@ -79,7 +79,7 @@ Rules:
   `cucumber/godog` (BDD acceptance tests).
 - **ID generation:** `task-<3 lowercase alphanumeric>`, generated with
   `crypto/rand` and a collision-retry loop. Namespace ≈ 47k; well above the
-  realistic ceiling for the project sizes TaskLedger targets.
+  realistic ceiling for the project sizes the task ledger tool targets.
 - **Atomic writes:** task files write to `<id>.md.tmp` and `rename` over the
   target.
 - **Locking:** an advisory `flock(2)` on `.taskledger/.lock` (via

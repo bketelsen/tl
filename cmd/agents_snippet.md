@@ -1,6 +1,6 @@
-## TaskLedger Workflow
+## tl workflow
 
-This repository uses TaskLedger (`tl`) for local task coordination between humans and agents. Treat TaskLedger as the source of truth for all non-trivial work: planning, claiming, progress notes, blockers, handoffs, and completion.
+This repository uses `tl` for local task coordination between humans and agents. Treat the task ledger as the source of truth for all non-trivial work: planning, claiming, progress notes, blockers, handoffs, and completion.
 
 Set `TL_ACTOR` once at the start of your session so you don't need `--actor` on each command:
 
@@ -10,10 +10,10 @@ export TL_ACTOR=claude-code:<purpose>
 
 Mandatory workflow:
 
-1. Start from TaskLedger.
+1. Start from the task ledger.
    - Run `tl ready --json` to find unclaimed work, or `tl ready --tag <role> --json` to filter by role-ish tags.
    - If the human hands you a task, run `tl show <task-id>` and `tl history <task-id>` before editing.
-   - Do not begin implementation from chat instructions alone if there is no matching TaskLedger task.
+   - Do not begin implementation from chat instructions alone if there is no matching tl task.
 2. Ensure every work item has a task.
    - If no suitable task exists, create one with `tl create "<title>" -d "<description>"` before editing files.
    - If your work uncovers a separable follow-up, create it with `tl create` instead of silently expanding scope.
@@ -23,10 +23,10 @@ Mandatory workflow:
 4. Re-check context after claiming.
    - Run `tl show <task-id>` to confirm scope, status, dependencies, and notes.
    - Run `tl history <task-id>` if there are prior events, stale claims, or handoff context.
-5. Record progress in TaskLedger while working.
+5. Record progress in the task ledger while working.
    - Re-run `tl claim <task-id>` periodically on long work — it extends the lease (heartbeat pattern).
    - Use `tl note <task-id> -m "..."` for meaningful progress, decisions, failed approaches, blockers, test results, and handoff context.
-6. End every session with an explicit TaskLedger state.
+6. End every session with an explicit task ledger state.
    - `tl close <task-id>` — work is done and verified.
    - `tl cancel <task-id> -m "<reason>"` — work won't be done.
    - `tl block <task-id> -m "<blocker>"` — external blocker; claim is released.

@@ -5,7 +5,7 @@ Feature: Inspect the event history of the ledger
   So that I can reconstruct who did what and when
 
   Background:
-    Given an initialized TaskLedger repository
+    Given an initialized task ledger repository
 
   Scenario: History accumulates events for one task in chronological order
     Given a ready task "task-abc123"
