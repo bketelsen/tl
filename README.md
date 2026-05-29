@@ -159,8 +159,9 @@ tl init                            # create the .tl/ ledger (once per repo)
 tl completion --install            # enable TAB completion for task IDs
 
 # Define work
-tl create "<title>" [-t type -p prio --tag x -d "..."]  # add a task
+tl create "<title>" [-t type -p prio --tag x --ref r -d "..."]  # add a task
 tl refine <id> [-p prio -t title --edit]                # edit an existing task
+tl refine <id> [--add-ref r --remove-ref r]             # attach/detach references
 tl dep add <id> --on <id>                               # declare a dependency
 tl dep remove <id> --on <id>                            # drop one
 
