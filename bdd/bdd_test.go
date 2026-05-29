@@ -74,6 +74,15 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		w.stdout = &bytes.Buffer{}
 		w.stderr = &bytes.Buffer{}
 		w.cmdErr = nil
+		// Clear env that leaks from the host (notably CI runners, which set
+		// XDG_CONFIG_HOME). The completion-install command resolves paths
+		// from these before falling back to $HOME, so an inherited value
+		// makes scenarios that only override HOME non-deterministic.
+		for _, key := range []string{"XDG_CONFIG_HOME", "XDG_DATA_HOME", "ZDOTDIR"} {
+			if err := os.Unsetenv(key); err != nil {
+				return ctx, err
+			}
+		}
 		return ctx, nil
 	})
 
