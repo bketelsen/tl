@@ -7,6 +7,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/aholbreich/tl)](https://goreportcard.com/report/github.com/aholbreich/tl)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+<img src=".github/tl-demo.svg" alt="tl demo - init, create, ready, claim, note, close" width="100%">
+
 ## Why tl cli?
 
 Chat history disappears. TODO files are not dependency-aware. GitHub Issues are remote-first.
