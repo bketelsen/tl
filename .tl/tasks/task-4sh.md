@@ -1,19 +1,19 @@
 ---
 id: task-4sh
 title: Design and implement tl doctor command
-status: in_progress
+status: open
 priority: high
 type: feature
 created_at: 2026-05-29T11:16:22Z
-updated_at: 2026-05-29T11:23:51Z
+updated_at: 2026-05-29T13:33:23Z
 created_by: human
 assignee: null
 depends_on: []
 claim:
-  actor: main-pc
-  claimed_at: 2026-05-29T11:16:24Z
-  expires_at: 2026-05-29T12:16:24Z
-  heartbeat_at: 2026-05-29T11:16:24Z
+  actor: null
+  claimed_at: null
+  expires_at: null
+  heartbeat_at: null
 tags:
   - cli
 ---

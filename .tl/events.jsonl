@@ -73,3 +73,9 @@
 {"time":"2026-05-29T12:39:08Z","event":"claimed","task_id":"task-7c5","actor":"claude-code"}
 {"time":"2026-05-29T12:41:46Z","event":"note_added","task_id":"task-7c5","actor":"claude-code"}
 {"time":"2026-05-29T12:41:46Z","event":"closed","task_id":"task-7c5","actor":"claude-code"}
+{"time":"2026-05-29T13:28:06Z","event":"note_added","task_id":"task-pnr","actor":"claude-code"}
+{"time":"2026-05-29T13:28:06Z","event":"closed","task_id":"task-pnr","actor":"claude-code"}
+{"time":"2026-05-29T13:28:10Z","event":"claimed","task_id":"task-vr6","actor":"claude-code"}
+{"time":"2026-05-29T13:33:23Z","event":"released","task_id":"task-4sh","actor":"main-pc"}
+{"time":"2026-05-29T13:36:36Z","event":"note_added","task_id":"task-vr6","actor":"claude-code"}
+{"time":"2026-05-29T13:36:36Z","event":"closed","task_id":"task-vr6","actor":"claude-code"}

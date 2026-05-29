@@ -35,6 +35,9 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: false,
 		Args:          cobra.ArbitraryArgs,
+		CompletionOptions: cobra.CompletionOptions{
+			DisableDefaultCmd: true,
+		},
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			return internalcolor.ValidateMode(colorMode)
 		},
@@ -91,6 +94,7 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(newPendingCmd())
 	root.AddCommand(newResolveCmd())
 	root.AddCommand(newRefineCmd())
+	root.AddCommand(newCompletionCmd())
 	return root
 }
 

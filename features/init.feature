@@ -10,6 +10,7 @@ Feature: Initialize a task ledger repository
     Then the directory contains a task ledger config file
     And the directory contains an empty tasks folder
     And the directory contains an empty event journal
+    And the output contains "tl completion --install"
 
   Scenario: Initializing an already-initialized repository is rejected
     Given the current directory already has a task ledger

@@ -111,15 +111,16 @@ Actor identity resolves in order: `--actor` flag > `TL_ACTOR` env >
 a `TASK_ID` argument suggests the actual task IDs from the current ledger.
 
 ```sh
-# bash (current shell)
-source <(tl completion bash)
-# zsh
-tl completion zsh > "${fpath[1]}/_tl"
-# fish
-tl completion fish > ~/.config/fish/completions/tl.fish
+tl completion --install            # auto-detect shell from $SHELL
+tl completion --install bash       # or pick one explicitly
 ```
 
-`tl completion --help` prints persistent-install instructions for each shell.
+The script is written to the canonical XDG path for the chosen shell:
+`~/.local/share/bash-completion/completions/tl` (bash),
+`~/.config/fish/completions/tl.fish` (fish), `~/.zsh/completions/_tl` (zsh —
+plus an fpath line to add to `~/.zshrc`). Open a new shell to activate.
+
+For a one-off in the current session: `source <(tl completion bash)`.
 
 ---
 

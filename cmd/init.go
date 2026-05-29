@@ -23,6 +23,7 @@ func newInitCmd() *cobra.Command {
 				return err
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "Initialized task ledger at %s\n", ledger)
+			fmt.Fprintln(cmd.OutOrStdout(), "Tip: run `tl completion --install` to enable TAB completion for task IDs.")
 			return nil
 		},
 	}
