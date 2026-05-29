@@ -8,7 +8,22 @@ No daemon. No hidden database. No automatic push. No AGENTS.md magic.
 
 **Contents:** [Installation Options](#installation-options) · [Quickstart](#quickstart) · [Commands](#commands) · [Implementation status](#implementation-status) · [Development](#development) · [Further reading](#further-reading)
 
----
+
+## Why tl?
+
+AI coding agents are great at doing work, but bad at sharing durable state.
+
+Chat history disappears. TODO files are not dependency-aware. GitHub Issues are remote-first.
+`tl` gives every repository a small local task ledger that both humans and agents can read and update. It anchores the work has to be done around one repository or project. 
+
+- Git-native: state lives in `.tl/`
+- Human-readable: tasks are Markdown with YAML frontmatter
+- Agent-readable: read commands support `--json`
+- Coordination-safe: claims use leases and stale work is detectable
+- Handoff-friendly: notes preserve context across sessions
+- Flexible: Task are unit of work, tl should adapt to you (agentic) flow. 
+- Boring by design: no daemon, no database, no automatic push
+
 
 ## Installation Options
 
