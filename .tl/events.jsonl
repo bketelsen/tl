@@ -79,3 +79,11 @@
 {"time":"2026-05-29T13:33:23Z","event":"released","task_id":"task-4sh","actor":"main-pc"}
 {"time":"2026-05-29T13:36:36Z","event":"note_added","task_id":"task-vr6","actor":"claude-code"}
 {"time":"2026-05-29T13:36:36Z","event":"closed","task_id":"task-vr6","actor":"claude-code"}
+{"time":"2026-05-29T13:50:41Z","event":"note_added","task_id":"task-4sh","actor":"claude-code"}
+{"time":"2026-05-29T13:50:41Z","event":"claimed","task_id":"task-4sh","actor":"claude-code"}
+{"time":"2026-05-29T13:54:29Z","event":"released","task_id":"task-4sh","actor":"claude-code"}
+{"time":"2026-05-29T14:04:17Z","event":"refined","task_id":"task-reg"}
+{"time":"2026-05-29T14:04:59Z","event":"note_added","task_id":"task-4sh","actor":"main-pc"}
+{"time":"2026-05-29T14:04:59Z","event":"note_added","task_id":"task-reg","actor":"main-pc"}
+{"time":"2026-05-29T14:05:17Z","event":"note_added","task_id":"task-reg","actor":"claude-code"}
+{"time":"2026-05-29T14:05:17Z","event":"note_added","task_id":"task-4sh","actor":"claude-code"}
