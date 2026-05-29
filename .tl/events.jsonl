@@ -124,3 +124,4 @@
 {"time":"2026-05-29T18:43:03Z","event":"claimed","task_id":"task-79e","actor":"claude:badges"}
 {"time":"2026-05-29T18:45:53Z","event":"note_added","task_id":"task-79e","actor":"claude:badges"}
 {"time":"2026-05-29T18:45:53Z","event":"closed","task_id":"task-79e","actor":"claude:badges"}
+{"time":"2026-05-29T18:58:19Z","event":"claimed","task_id":"task-ppj","actor":"pi:promotion"}

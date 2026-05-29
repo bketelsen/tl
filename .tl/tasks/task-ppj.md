@@ -1,19 +1,19 @@
 ---
 id: task-ppj
 title: Add a GitHub social-preview image
-status: open
+status: in_progress
 priority: medium
 type: chore
 created_at: 2026-05-29T16:52:29Z
-updated_at: 2026-05-29T16:52:29Z
+updated_at: 2026-05-29T18:58:19Z
 created_by: human
 assignee: null
 depends_on: []
 claim:
-  actor: null
-  claimed_at: null
-  expires_at: null
-  heartbeat_at: null
+  actor: pi:promotion
+  claimed_at: 2026-05-29T18:58:19Z
+  expires_at: 2026-05-29T19:58:19Z
+  heartbeat_at: 2026-05-29T18:58:19Z
 tags:
   - promotion
 ---
