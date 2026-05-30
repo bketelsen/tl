@@ -22,7 +22,7 @@ Chat history disappears. TODO files are not dependency-aware. GitHub Issues are 
 - Flexible: tasks are the unit of work — `tl` adapts to your (agentic) flow.
 - Boring by design: no daemon, no database, no automatic push
 
-**Contents:** [How it compares](#how-tl-compares) · [Installation Options](#installation-options) · [Quickstart](#quickstart) · [Commands](#commands) · [Implementation status](#implementation-status) · [Development](#development) · [Further reading](#further-reading)
+**Contents:** [How it compares](#how-tl-compares) · [Installation Options](#installation-options) · [Quickstart](#quickstart) · [Commands](#commands)  · [Development](#development) · [Further reading](#further-reading)
 
 ---
 
@@ -192,26 +192,15 @@ tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
 tl agents                          # print a paste-ready agent workflow guide
+
+#Exit Codes:
+`0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed
 ```
 
 - Walkthrough: [`docs/usage.md`](docs/usage.md) — tl by example, flow by flow
 - Behavioral spec: [`features/`](features) (one `.feature` file per command)
 - Per-command flags: `tl <cmd> --help`
 
----
-
-## Implementation status
-
-Implemented commands carry the `@implemented` tag in their feature file.
-`make bdd` runs only the implemented suite; untagged features are the
-binding contract for unimplemented commands.
-
----
-
-## Exit codes
-
-`0` success · `1` generic · `2` invalid args · `3` task not found ·
-`4` task not ready · `5` already claimed · `7` lock failed
 
 ---
 
