@@ -222,3 +222,7 @@
 {"time":"2026-05-31T18:47:14Z","event":"note_added","task_id":"task-6uc","actor":"pi:remove"}
 {"time":"2026-05-31T18:47:14Z","event":"closed","task_id":"task-6uc","actor":"pi:remove"}
 {"time":"2026-05-31T19:06:38Z","event":"removed","task_id":"task-l7t","actor":"main-pc","value":"Test task"}
+{"time":"2026-05-31T19:09:29Z","event":"removed","task_id":"task-a46","actor":"main-pc","value":"outdated"}
+{"time":"2026-05-31T19:09:42Z","event":"removed","task_id":"task-b3i","actor":"main-pc","value":"outdated"}
+{"time":"2026-05-31T19:10:38Z","event":"removed","task_id":"task-pnr","actor":"main-pc","value":"outdated"}
+{"time":"2026-05-31T19:10:46Z","event":"removed","task_id":"task-0fo","actor":"main-pc","value":"outdated"}
