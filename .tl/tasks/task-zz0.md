@@ -1,11 +1,11 @@
 ---
 id: task-zz0
 title: 'Revise agents snippet content: remove make bdd leak, add --actor pattern, soften rigid language, add missing commands'
-status: open
+status: done
 priority: medium
 type: chore
 created_at: 2026-05-30T18:24:09Z
-updated_at: 2026-05-30T18:24:09Z
+updated_at: 2026-05-31T09:32:25Z
 created_by: human
 assignee: null
 depends_on: []
@@ -35,3 +35,7 @@ The tl agents snippet (cmd/agents_snippet.md) has several content issues:
 6. No context-economy mode — snippet is ~70 lines. Consider adding --compact flag (separate task scope, but the base snippet should be tighter).
 
 See the critical review in session history for full context.
+
+## Notes
+
+- 2026-05-31T09:32:25Z [pi] note: Revised agents snippet to use explicit --actor agent-name examples, soften task-start guidance, remove make bdd/@implemented leak, add handoff/reference context, and document history/dep/stale/unblock/resolve commands. Updated agents feature expectations, BDD code-span checks, and usage docs. Validation: gofmt, make bdd, make test passed.

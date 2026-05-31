@@ -288,7 +288,9 @@ $ tl doctor --fix --force              # include destructive repairs
 
 `agents` prints a ready-to-paste workflow guide for a coding agent. Drop its
 output into `AGENTS.md` or an agent's context so it knows the claim/note/close
-discipline without being told each time.
+discipline without being told each time. The generated snippet uses explicit
+`--actor agent-name` examples, highlights handoff reads (`show` + `history`),
+and reminds agents to inspect task references before editing.
 
 ```sh
 $ tl agents | head -3
