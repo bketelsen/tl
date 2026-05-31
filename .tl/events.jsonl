@@ -181,3 +181,7 @@
 {"time":"2026-05-31T09:32:25Z","event":"note_added","task_id":"task-zz0","actor":"pi"}
 {"time":"2026-05-31T09:32:25Z","event":"closed","task_id":"task-zz0","actor":"pi"}
 {"time":"2026-05-31T09:36:58Z","event":"created","task_id":"task-1tn","actor":"human"}
+{"time":"2026-05-31T09:42:36Z","event":"claimed","task_id":"task-xb3","actor":"pi"}
+{"time":"2026-05-31T09:43:12Z","event":"created","task_id":"task-fly","actor":"human"}
+{"time":"2026-05-31T09:43:36Z","event":"note_added","task_id":"task-xb3","actor":"pi"}
+{"time":"2026-05-31T09:43:36Z","event":"closed","task_id":"task-xb3","actor":"pi"}

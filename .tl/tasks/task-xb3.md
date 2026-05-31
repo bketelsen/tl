@@ -1,11 +1,11 @@
 ---
 id: task-xb3
 title: Rename tl agents --update flag to --write-files (alias old name for compat)
-status: open
+status: done
 priority: medium
 type: chore
 created_at: 2026-05-30T18:24:15Z
-updated_at: 2026-05-30T18:24:15Z
+updated_at: 2026-05-31T09:43:36Z
 created_by: human
 assignee: null
 depends_on: []
@@ -35,3 +35,7 @@ Changes needed:
 6. Update AGENTS.md if it has inline tl agents --update mentions.
 
 The old --update flag must continue to work (via hidden alias) — this is not a breaking change.
+
+## Notes
+
+- 2026-05-31T09:43:36Z [pi] note: Implemented agents flag rename: new --write-files flag, hidden deprecated --update alias sharing same behavior, BDD scenarios moved to --write-files with alias coverage. Verified help only shows --write-files. Validation: gofmt, go test ./cmd -run Agents -v, make bdd, make test passed.

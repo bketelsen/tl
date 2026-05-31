@@ -19,17 +19,17 @@ Feature: Print recommended agent instructions
     When the developer runs `tl agents`
     Then the file "AGENTS.md" still has content "# My Project"
 
-  Scenario: Running agents with update appends to existing agent instruction files
+  Scenario: Running agents with write-files appends to existing agent instruction files
     Given the file "AGENTS.md" exists with content "# My Project"
     And the file "CLAUDE.md" exists with content "# Claude Notes"
-    When the developer runs `tl agents --update`
+    When the developer runs `tl agents --write-files`
     Then the file "AGENTS.md" contains "<!-- BEGIN TL WORKFLOW -->"
     And the file "AGENTS.md" contains "## tl workflow"
     And the file "CLAUDE.md" contains "## tl workflow"
     And the output contains "Updated AGENTS.md"
     And the output contains "Updated CLAUDE.md"
 
-  Scenario: Running agents with update refreshes an existing managed block
+  Scenario: Running agents with write-files refreshes an existing managed block
     Given the file "AGENTS.md" exists with content:
       """
       # My Project
@@ -38,13 +38,20 @@ Feature: Print recommended agent instructions
       old workflow text
       <!-- END TL WORKFLOW -->
       """
-    When the developer runs `tl agents --update`
+    When the developer runs `tl agents --write-files`
     Then the file "AGENTS.md" contains "`tl ready --tag <role> --json`"
     And the file "AGENTS.md" does not contain "old workflow text"
 
-  Scenario: Running agents with update does not create missing instruction files
-    When the developer runs `tl agents --update`
+  Scenario: Running agents with write-files does not create missing instruction files
+    When the developer runs `tl agents --write-files`
     Then the file "AGENTS.md" does not exist
     And the file "CLAUDE.md" does not exist
     And the file "GEMINI.md" does not exist
     And the output contains "No existing agent instruction files found"
+
+  Scenario: Running agents with deprecated update alias still writes files
+    Given the file "AGENTS.md" exists with content "# My Project"
+    When the developer runs `tl agents --update`
+    Then the file "AGENTS.md" contains "<!-- BEGIN TL WORKFLOW -->"
+    And the file "AGENTS.md" contains "## tl workflow"
+    And the output contains "Updated AGENTS.md"

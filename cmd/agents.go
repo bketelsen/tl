@@ -22,19 +22,21 @@ const (
 var agentInstructionFiles = []string{"AGENTS.md", "CLAUDE.md", "GEMINI.md"}
 
 func newAgentsCmd() *cobra.Command {
-	var update bool
+	var writeFiles bool
 	c := &cobra.Command{
 		Use:   "agents",
 		Short: "Print recommended AGENTS.md instructions",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if update {
+			if writeFiles {
 				return updateAgentInstructionFiles(cmd)
 			}
 			_, err := fmt.Fprint(cmd.OutOrStdout(), agentsSnippet)
 			return err
 		},
 	}
-	c.Flags().BoolVar(&update, "update", false, "Append or refresh the tl workflow block in existing agent instruction files")
+	c.Flags().BoolVar(&writeFiles, "write-files", false, "Write or refresh the tl workflow block in existing agent instruction files")
+	c.Flags().BoolVar(&writeFiles, "update", false, "(deprecated: use --write-files)")
+	_ = c.Flags().MarkHidden("update")
 	return c
 }
 
