@@ -29,66 +29,59 @@ Rules:
 - Do not write vague `Then` steps.
 - Do not include step definitions in feature files unless explicitly requested.
 
-## tl cli Workflow
 
-This repository uses task ledger tool (`tl`) for local task coordination between humans and agents.
+<!-- BEGIN TL WORKFLOW -->
+## tl workflow
 
-Set `TL_ACTOR` once at the start of your session so you don't need `--actor` on each command:
+This repository uses `tl` cli for local task coordination between humans and agents. Treat the task ledger as the source of truth for non-trivial work: planning, claiming, progress notes, blockers, handoffs, and completion.
+
+Use an explicit actor on mutating commands so claims, notes, and handoffs are attributed clearly:
 
 ```sh
-#when TL_ACTOR, AGENT_NAME are not set, try to set it.
-export TL_ACTOR=<agent-name>:<purpose>
+tl claim <task-id> --actor agent-name
+tl note <task-id> -m "..." --actor agent-name
+tl close <task-id> --actor agent-name
 ```
 
-When starting work:
+Recommended workflow:
 
-1. Pick a task:
-   - `tl ready --json` for unclaimed work, or `tl ready --tag <role> --json` to filter by role-ish tags.
-   - `tl show <task-id>` when handed a specific task.
-   - `tl history <task-id>` if the task was previously worked on; read prior notes before starting.
-2. Claim it before editing files:
-   `tl claim <task-id>`
-3. Inspect the task details:
-   `tl show <task-id>`
-4. Do the work. Re-run `tl claim <task-id>` periodically on long work — it extends the lease (heartbeat pattern).
-   Record important context, decisions, blockers, or handoff notes:
-   `tl note <task-id> -m "..."`
-5. Pick the correct exit:
-   - `tl close <task-id>` — work is done and verified.
-   - `tl cancel <task-id> -m "<reason>"` — work won't be done.
-   - `tl block <task-id> -m "<blocker>"` — external blocker; claim is released.
-   - `tl pending <task-id> --question "..."` — you need a human decision; claim is released.
-   - `tl release <task-id>` — you're stepping away cleanly; leave a comprehensive note first.
-
-   (`cancel`, `block`, `pending` are spec'd in `features/`; check the current `@implemented` set with `make bdd` before relying on them.)
+1. Start from the task ledger.
+   - Run `tl ready --json` to find unclaimed work, or `tl ready --tag <role> --json` to filter by role-ish tags.
+   - If the human hands you a task, run `tl show <task-id>` and `tl history <task-id>` before editing.
+   - For non-trivial implementation work, prefer a matching tl task. If none exists, create one or ask whether to create one before editing.
+2. Preserve and follow context.
+   - Treat `References:` from `tl show` as context pointers; inspect referenced files, docs, URLs, tickets, or feature specs before editing.
+   - If no suitable task exists, create one with `tl create "<title>" -d "<description>" --ref <path-or-url>`.
+   - If your work uncovers a separable follow-up, create it with `tl create` and add useful `--ref` values instead of silently expanding scope.
+3. Claim before editing.
+   - Run `tl claim <task-id> --actor agent-name` before making code, doc, config, or test changes.
+   - Do **not** work on a task claimed by another active actor unless explicitly told.
+4. Re-check context after claiming.
+   - Run `tl show <task-id>` to confirm scope, dependencies, references, and notes.
+   - Run `tl history <task-id>` to read prior events, stale claims, decisions, and handoff context.
+5. Record progress while working.
+   - Re-run `tl claim <task-id> --actor agent-name` periodically on long work — it extends the lease (heartbeat pattern).
+   - Use `tl note <task-id> -m "..." --actor agent-name` for meaningful progress, decisions, failed approaches, blockers, test results, and handoff context.
+6. Use dependencies and stalled-work commands when needed.
+   - `tl dep add <task-id> --on <task-id>` - make one task wait for another.
+   - `tl dep remove <task-id> --on <task-id>` - remove a dependency.
+   - `tl stale` — list expired claims that may need cleanup or handoff.
+   - If unsure whether a command exists in this version, run `tl <cmd> --help`.
+7. End every session with an explicit task ledger state.
+   - `tl close <task-id> --actor agent-name` - work is done and verified.
+   - `tl cancel <task-id> -m "<reason>" --actor agent-name` - work won't be done.
+   - `tl block <task-id> -m "<blocker>" --actor agent-name` - external blocker; claim is released.
+   - `tl unblock <task-id> --actor agent-name` - external blocker is resolved.
+   - `tl pending <task-id> --question "..." --actor agent-name` - you need a human decision; claim is released.
+   - `tl resolve <task-id> --answer "..." --actor agent-name` - record the human answer and reopen the task.
+   - `tl release <task-id> --actor agent-name` - you're stepping away cleanly; leave a comprehensive note first.
 
 Rules:
 
-- Do **not** work on a task claimed by another active actor unless explicitly told.
-- If your work uncovers a separable piece of work, create a follow-up task with `tl create` rather than silently expanding scope.
 - Prefer tasks from `tl ready`; blocked, pending, done, cancelled, or actively claimed tasks are not ready.
-- Leave notes for partial progress, failed approaches, decisions, and handoffs.
+- Use `--json` for automation and parsing (`tl ready --json`, `tl show <task-id> --json`, `tl history <task-id> --json`).
+- Leave notes for partial progress, failed approaches, decisions, test results, blockers, and handoffs.
+- Attach references with `--ref` when they help the next human or agent recover context quickly.
 - Do **not** edit `.tl/events.jsonl` manually.
-- Create new task/story/bug when new work is defined. Always check whether its already covered by existing tasks.
 - If `.tl/` is missing, ask the human whether to run `tl init`.
-
-
-## Implementation notes
-
-- **Major libs:** `spf13/cobra` (CLI), `gopkg.in/yaml.v3` (frontmatter),
-  `cucumber/godog` (BDD acceptance tests).
-- **ID generation:** `task-<3 lowercase alphanumeric>`, generated with
-  `crypto/rand` and a collision-retry loop. Namespace ≈ 47k; well above the
-  realistic ceiling for the project sizes the task ledger tool targets.
-- **Atomic writes:** task files write to `<id>.md.tmp` and `rename` over the
-  target.
-- **Locking:** an advisory `flock(2)` on `.tl/.lock` (via
-  `github.com/gofrs/flock`) guards mutating commands. Acquired once at
-  command start, held across the read-modify-write, released on exit (or
-  via deferred unlock). Lock contention surfaces as exit code 7 after a
-  5-second wait. Read commands need no lock — task files use `.tmp` +
-  atomic `rename`, and `events.jsonl` uses `O_APPEND`.
-- **Repository detection:** commands walk upward from CWD to find
-  `.tl/`.
-
----
+<!-- END TL WORKFLOW -->
