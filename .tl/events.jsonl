@@ -170,3 +170,10 @@
 {"time":"2026-05-30T19:47:23Z","event":"claimed","task_id":"task-4sh","actor":"pi:doctor"}
 {"time":"2026-05-30T19:47:27Z","event":"note_added","task_id":"task-4sh","actor":"pi:doctor"}
 {"time":"2026-05-30T19:47:27Z","event":"closed","task_id":"task-4sh","actor":"pi:doctor"}{"time":"2026-05-30T20:02:24Z","event":"created","task_id":"task-l7t","actor":"human"}
+{"time":"2026-05-30T21:20:18Z","event":"created","task_id":"task-0fo","actor":"codex:article"}
+{"time":"2026-05-30T21:20:20Z","event":"claimed","task_id":"task-0fo","actor":"codex:article"}
+{"time":"2026-05-30T21:22:29Z","event":"note_added","task_id":"task-0fo","actor":"codex:article"}
+{"time":"2026-05-30T21:22:31Z","event":"closed","task_id":"task-0fo","actor":"codex:article"}
+{"time":"2026-05-31T09:16:33Z","event":"claimed","task_id":"task-hz9","actor":"pi:release-automation"}
+{"time":"2026-05-31T09:21:14Z","event":"note_added","task_id":"task-hz9","actor":"pi:release-automation"}
+{"time":"2026-05-31T09:23:06Z","event":"closed","task_id":"task-hz9","actor":"pi:release-automation"}

@@ -1,11 +1,11 @@
 ---
 id: task-hz9
 title: Add make changelog + make release automation (replace backfill)
-status: open
+status: done
 priority: medium
 type: feature
 created_at: 2026-05-29T16:52:45Z
-updated_at: 2026-05-30T19:32:08Z
+updated_at: 2026-05-31T09:23:06Z
 created_by: human
 assignee: null
 depends_on: []
@@ -120,3 +120,4 @@ Releases follow [Semantic Versioning](https://semver.org/).
 ## Notes
 
 - 2026-05-30T19:32:08Z [pi:planning] note: Task scope fully revised after analysis. Key finding: tl has 0 merged PRs (direct-to-main workflow), so GitHub's PR-based --generate-notes produces only a compare link. Replaced backfill scope with: (1) make changelog — git log grouped by conventional commit prefix, (2) make release VERSION=x.y.z — one-command release pipeline, (3) remove broken make bump, (4) optional minimal CHANGELOG.md pointing to releases page.
+- 2026-05-31T09:21:14Z [pi:release-automation] note: Implemented release automation in Makefile: changelog target, release target requiring VERSION, removed bump, added CHANGELOG.md, and adjusted release workflow to skip existing releases so make release notes are not overwritten. Validation: make -n release VERSION=0.8.1, make changelog, make test passed. Note: while validating an earlier recipe with make -n release VERSION=0.8.0, GNU make executed the recursive MAKE line and pushed/triggered an actual 0.8.0 tag/release; needs human decision whether to keep or delete/update that release.

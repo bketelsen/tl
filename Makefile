@@ -8,7 +8,7 @@ LDFLAGS := -X main.version=$(VERSION)-$(COUNT)-$(COMMIT_HASH)
 
 PLATFORMS = linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64
 
-.PHONY: build test bdd install rpm get-version bump amend dists clean cleancache \
+.PHONY: build test bdd install rpm get-version changelog release amend dists clean cleancache \
 	binary_linux_amd64 binary_linux_arm64 binary_darwin_amd64 binary_darwin_arm64 \
 	binary_windows_amd64 binary_windows_arm64
 
@@ -39,15 +39,63 @@ rpm:
 get-version:
 	@echo $(VERSION)-$(COUNT)-$(COMMIT_HASH)
 
-# Interactive tag bump. Prompts for a new version, tags HEAD, pushes the tag.
-bump:
-	@echo "Current version: $(VERSION)"
-	@echo "Current commit hash: $(COMMIT_HASH)"
-	@echo "Current count: $(COUNT)"
-	@echo "Enter new version: "
-	@read new_version; \
-	git tag $$new_version; \
-	git push origin $$new_version
+# Generate release notes from commits since the previous tag.
+changelog:
+	@if prev=$$(git describe --tags --abbrev=0 2>/dev/null); then \
+		range="$$prev..HEAD"; \
+	else \
+		range="HEAD"; \
+	fi; \
+	git log --oneline "$$range" | awk ' \
+		BEGIN { print "## What'"'"'s Changed"; print "" } \
+		{ \
+			msg = $$0; \
+			sub(/^[0-9a-f]+[[:space:]]+/, "", msg); \
+			lower = tolower(msg); \
+			line = "  • " msg "\n"; \
+			if (lower ~ /^(feat|feature)(\([^)]+\))?!?:/) features = features line; \
+			else if (lower ~ /^fix(\([^)]+\))?!?:/) fixes = fixes line; \
+			else if (lower ~ /^docs(\([^)]+\))?!?:/) docs = docs line; \
+			else if (lower ~ /^refactor(\([^)]+\))?!?:/) refactors = refactors line; \
+			else if (lower ~ /^chores?(\([^)]+\))?!?:/) maintenance = maintenance line; \
+			else other = other line; \
+		} \
+		END { \
+			section("### 🚀 Features", features); \
+			section("### 🐛 Fixes", fixes); \
+			section("### 📖 Documentation", docs); \
+			section("### ♻️ Refactoring", refactors); \
+			section("### 🔧 Maintenance", maintenance); \
+			section("### Other Changes", other); \
+			if (!printed) print "No changes since the last release."; \
+		} \
+		function section(title, body) { \
+			if (body != "") { \
+				if (printed) print ""; \
+				print title; \
+				printf "%s", body; \
+				printed = 1; \
+			} \
+		}'
+
+ifneq ($(filter release,$(MAKECMDGOALS)),)
+ifneq ($(origin VERSION),command line)
+$(error Usage: make release VERSION=x.y.z)
+endif
+endif
+
+# Build archives, tag HEAD, push the tag, and publish a GitHub Release.
+release: dists
+	@set -e; \
+	notes=$$(mktemp); \
+	trap 'rm -f "$$notes"' EXIT; \
+	for asset in tl-*.tar.gz tl-*.zip; do \
+		[ -e "$$asset" ] || { echo "Missing release assets; run make dists first." >&2; exit 1; }; \
+	done; \
+	make changelog > "$$notes"; \
+	git tag "$(VERSION)"; \
+	gh release create "$(VERSION)" --target "$$(git rev-parse HEAD)" --notes-file "$$notes" --title "tl $(VERSION)" tl-*.tar.gz tl-*.zip; \
+	git push origin "$(VERSION)"
 
 # Amend the last commit with all current changes and force-push. Use with care.
 amend:
