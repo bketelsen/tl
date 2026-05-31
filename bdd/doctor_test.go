@@ -29,6 +29,7 @@ func initializeDoctorSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^a second task file claiming id "([^"]*)" exists in the tasks directory$`, w.doctorSecondFileWithID)
 	ctx.Step(`^a task "([^"]*)" with dependency "([^"]*)"$`, w.doctorTaskWithDependency)
 	ctx.Step(`^an event in the journal referencing task "([^"]*)"$`, w.doctorEventReferencingTask)
+	ctx.Step(`^a journal line contains two concatenated events$`, w.doctorConcatenatedJournalEvents)
 	ctx.Step(`^no task file for "([^"]*)" exists$`, w.doctorNoTaskFileFor)
 	ctx.Step(`^a task "([^"]*)" with status "in_progress" and no active claim$`, w.doctorInProgressNoClaim)
 	ctx.Step(`^a task "([^"]*)" claimed by "([^"]*)" with an expired lease$`, w.doctorClaimedExpiredLease)
@@ -66,6 +67,8 @@ func initializeDoctorSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the doctor reports the claim data as cleared$`, w.doctorReportsCleared)
 	ctx.Step(`^"([^"]*)" has no claim data$`, w.doctorTaskHasNoClaimData)
 	ctx.Step(`^the doctor reports the stale claim as released$`, w.doctorReportsReleased)
+	ctx.Step(`^the doctor reports the event journal as fixed$`, w.doctorReportsEventJournalFixed)
+	ctx.Step(`^the event journal has one event per line$`, w.doctorJournalHasOneEventPerLine)
 	ctx.Step(`^the doctor reports the "([^"]*)" issue for "([^"]*)" as not fixable$`, w.doctorReportsNotFixable)
 }
 
@@ -152,6 +155,28 @@ func (w *world) doctorTaskWithDependency(id, dep string) error {
 
 func (w *world) doctorEventReferencingTask(id string) error {
 	return recordFixtureEvent("created", id, "human", fixtureTime)
+}
+
+func (w *world) doctorConcatenatedJournalEvents() error {
+	first := doctorValidTask("task-one")
+	second := doctorValidTask("task-two")
+	if err := writeFixtureTask(first); err != nil {
+		return err
+	}
+	if err := writeFixtureTask(second); err != nil {
+		return err
+	}
+	e1, err := json.Marshal(events.Event{Time: fixtureTime, Event: "created", TaskID: first.ID, Actor: "human"})
+	if err != nil {
+		return err
+	}
+	e2, err := json.Marshal(events.Event{Time: fixtureTime.Add(time.Second), Event: "created", TaskID: second.ID, Actor: "human"})
+	if err != nil {
+		return err
+	}
+	line := append(append([]byte{}, e1...), e2...)
+	line = append(line, '\n')
+	return os.WriteFile(filepath.Join(".tl", "events.jsonl"), line, 0o644)
 }
 
 func (w *world) doctorNoTaskFileFor(id string) error {
@@ -433,6 +458,35 @@ func (w *world) doctorReportsReleased() error {
 	out := w.stdout.String()
 	if !strings.Contains(out, "released") || !strings.Contains(out, doctor.CategoryClaims) {
 		return fmt.Errorf("fix output does not report a released claim; got:\n%s", out)
+	}
+	return nil
+}
+
+func (w *world) doctorReportsEventJournalFixed() error {
+	out := w.stdout.String()
+	if !strings.Contains(out, "fixed") || !strings.Contains(out, doctor.CategoryEvents) || !strings.Contains(out, "concatenated JSON objects") {
+		return fmt.Errorf("fix output does not report event journal repair; got:\n%s", out)
+	}
+	return nil
+}
+
+func (w *world) doctorJournalHasOneEventPerLine() error {
+	data, err := os.ReadFile(filepath.Join(".tl", "events.jsonl"))
+	if err != nil {
+		return err
+	}
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	if len(lines) != 2 {
+		return fmt.Errorf("expected two event lines, got %d:\n%s", len(lines), data)
+	}
+	for _, line := range lines {
+		if strings.Contains(line, "}{") {
+			return fmt.Errorf("event line still contains concatenated objects: %s", line)
+		}
+		var e events.Event
+		if err := json.Unmarshal([]byte(line), &e); err != nil {
+			return fmt.Errorf("event line is not valid JSON: %w", err)
+		}
 	}
 	return nil
 }

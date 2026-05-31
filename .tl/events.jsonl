@@ -169,7 +169,8 @@
 {"time":"2026-05-30T19:44:55Z","event":"released","task_id":"task-4sh","actor":"main-pc"}
 {"time":"2026-05-30T19:47:23Z","event":"claimed","task_id":"task-4sh","actor":"pi:doctor"}
 {"time":"2026-05-30T19:47:27Z","event":"note_added","task_id":"task-4sh","actor":"pi:doctor"}
-{"time":"2026-05-30T19:47:27Z","event":"closed","task_id":"task-4sh","actor":"pi:doctor"}{"time":"2026-05-30T20:02:24Z","event":"created","task_id":"task-l7t","actor":"human"}
+{"time":"2026-05-30T19:47:27Z","event":"closed","task_id":"task-4sh","actor":"pi:doctor"}
+{"time":"2026-05-30T20:02:24Z","event":"created","task_id":"task-l7t","actor":"human"}
 {"time":"2026-05-30T21:20:18Z","event":"created","task_id":"task-0fo","actor":"codex:article"}
 {"time":"2026-05-30T21:20:20Z","event":"claimed","task_id":"task-0fo","actor":"codex:article"}
 {"time":"2026-05-30T21:22:29Z","event":"note_added","task_id":"task-0fo","actor":"codex:article"}
@@ -205,3 +206,11 @@
 {"time":"2026-05-31T10:10:01Z","event":"refined","task_id":"task-dsp","value":"type: task"}
 {"time":"2026-05-31T10:10:01Z","event":"refined","task_id":"task-mj2","value":"type: task"}
 {"time":"2026-05-31T10:10:01Z","event":"refined","task_id":"task-qf4","value":"type: task"}
+{"time":"2026-05-31T18:10:37Z","event":"created","task_id":"task-lrv","actor":"pi:doctor-events"}
+{"time":"2026-05-31T18:10:37Z","event":"reference_added","task_id":"task-lrv","actor":"pi:doctor-events","value":"internal/doctor/doctor.go"}
+{"time":"2026-05-31T18:10:37Z","event":"reference_added","task_id":"task-lrv","actor":"pi:doctor-events","value":"internal/doctor/doctor_test.go"}
+{"time":"2026-05-31T18:10:37Z","event":"reference_added","task_id":"task-lrv","actor":"pi:doctor-events","value":"features/doctor.feature"}
+{"time":"2026-05-31T18:10:44Z","event":"claimed","task_id":"task-lrv","actor":"pi:doctor-events"}
+{"time":"2026-05-31T18:14:30Z","event":"note_added","task_id":"task-lrv","actor":"pi:doctor-events"}
+{"time":"2026-05-31T18:14:30Z","event":"closed","task_id":"task-lrv","actor":"pi:doctor-events"}
+{"time":"2026-05-31T18:16:13Z","event":"note_added","task_id":"task-lrv","actor":"pi:doctor-events"}

@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -57,13 +58,14 @@ const (
 
 // fix kinds — drive the repair Fix performs and the verb it reports.
 const (
-	fixSelfDep     = "self-dependency"
-	fixOrphanTmp   = "orphan-tmp"
-	fixOpenClaim   = "open-claim"
-	fixExpired     = "expired-claim"
-	fixDeadRef     = "dead-reference"
-	fixOrphanEvent = "orphan-event"
-	fixEmptyType   = "empty-type"
+	fixSelfDep           = "self-dependency"
+	fixOrphanTmp         = "orphan-tmp"
+	fixOpenClaim         = "open-claim"
+	fixExpired           = "expired-claim"
+	fixDeadRef           = "dead-reference"
+	fixOrphanEvent       = "orphan-event"
+	fixEventJournalJSONL = "event-journal-jsonl"
+	fixEmptyType         = "empty-type"
 )
 
 // Diagnostic is one finding. The exported fields form the stable JSON shape;
@@ -273,6 +275,8 @@ func applyRepair(ledger string, d Diagnostic, force bool) (string, error) {
 		return "fixed", events.Append(ledger, events.Event{Event: "reference_removed", TaskID: t.ID, Value: d.fixTarget})
 	case fixOrphanEvent:
 		return purgeOrphanedEvents(ledger, d.TaskID)
+	case fixEventJournalJSONL:
+		return normalizeEventJournalJSONL(ledger)
 	case fixEmptyType:
 		t, err := store.Read(ledger, d.TaskID)
 		if err != nil {
@@ -539,37 +543,99 @@ func scanEvents(ledger string, parsed map[string]*task.Task) (int, []Diagnostic)
 	defer f.Close()
 
 	count := 0
+	lineNo := 0
 	seenOrphan := map[string]bool{}
+	reportedConcatenated := false
 	var out []Diagnostic
 	scanner := bufio.NewScanner(f)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 	for scanner.Scan() {
+		lineNo++
 		line := scanner.Bytes()
-		if len(line) == 0 {
+		if len(bytes.TrimSpace(line)) == 0 {
 			continue
 		}
-		count++
-		var e events.Event
-		if err := json.Unmarshal(line, &e); err != nil {
+
+		evs, concatenated, err := decodeEventJournalLine(line)
+		if err != nil {
+			out = append(out, Diagnostic{
+				Severity: SeverityError,
+				Category: CategoryEvents,
+				Message:  fmt.Sprintf("event journal line %d is not valid JSON: %v", lineNo, err),
+			})
 			continue
 		}
-		if e.TaskID == "" || seenOrphan[e.TaskID] {
-			continue
+		if concatenated && !reportedConcatenated {
+			reportedConcatenated = true
+			out = append(out, Diagnostic{
+				Severity: SeverityError,
+				Category: CategoryEvents,
+				Message:  "event journal contains concatenated JSON objects",
+				Fixable:  true, fixKind: fixEventJournalJSONL,
+			})
 		}
-		if _, ok := parsed[store.NormalizeID(e.TaskID)]; ok {
-			continue
+
+		for _, e := range evs {
+			count++
+			if e.TaskID == "" || seenOrphan[e.TaskID] {
+				continue
+			}
+			if _, ok := parsed[store.NormalizeID(e.TaskID)]; ok {
+				continue
+			}
+			if taskExists(parsed, e.TaskID) {
+				continue
+			}
+			seenOrphan[e.TaskID] = true
+			out = append(out, Diagnostic{
+				Severity: SeverityWarning, Category: CategoryEvents, TaskID: e.TaskID,
+				Message: "event journal references task with no file",
+				Fixable: true, fixKind: fixOrphanEvent,
+			})
 		}
-		if taskExists(parsed, e.TaskID) {
-			continue
-		}
-		seenOrphan[e.TaskID] = true
-		out = append(out, Diagnostic{
-			Severity: SeverityWarning, Category: CategoryEvents, TaskID: e.TaskID,
-			Message: "event journal references task with no file",
-			Fixable: true, fixKind: fixOrphanEvent,
-		})
 	}
 	return count, out
+}
+
+func decodeEventJournalLine(line []byte) ([]events.Event, bool, error) {
+	var single events.Event
+	if err := json.Unmarshal(line, &single); err == nil {
+		return []events.Event{single}, false, nil
+	}
+
+	rawValues, err := splitJSONValues(line)
+	if err != nil {
+		return nil, false, err
+	}
+	if len(rawValues) < 2 {
+		return nil, false, fmt.Errorf("expected one JSON object per line")
+	}
+
+	evs := make([]events.Event, 0, len(rawValues))
+	for _, raw := range rawValues {
+		var e events.Event
+		if err := json.Unmarshal(raw, &e); err != nil {
+			return nil, false, err
+		}
+		evs = append(evs, e)
+	}
+	return evs, true, nil
+}
+
+func splitJSONValues(line []byte) ([][]byte, error) {
+	dec := json.NewDecoder(bytes.NewReader(line))
+	var values [][]byte
+	for {
+		var raw json.RawMessage
+		if err := dec.Decode(&raw); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		values = append(values, append([]byte(nil), bytes.TrimSpace(raw)...))
+	}
+	return values, nil
 }
 
 func checkConfig(ledger string) []Diagnostic {
@@ -628,8 +694,45 @@ func removeString(list []string, v string) []string {
 
 func quote(s string) string { return "\"" + s + "\"" }
 
-// sortDiagnostics orders findings by category, then severity (errors first),
-// then task id, for stable human and JSON output.
+// normalizeEventJournalJSONL rewrites repairable concatenated JSON-object lines
+// as one event object per line, preserving all already-valid lines unchanged.
+func normalizeEventJournalJSONL(ledger string) (string, error) {
+	p := filepath.Join(ledger, repo.EventsJournal)
+	input, err := os.ReadFile(p)
+	if err != nil {
+		return "", err
+	}
+
+	var out []byte
+	changed := false
+	for _, line := range bytes.Split(input, []byte("\n")) {
+		if len(bytes.TrimSpace(line)) == 0 {
+			continue
+		}
+		if _, concatenated, err := decodeEventJournalLine(line); err == nil && concatenated {
+			rawValues, err := splitJSONValues(line)
+			if err != nil {
+				return "", err
+			}
+			for _, raw := range rawValues {
+				out = append(out, bytes.TrimSpace(raw)...)
+				out = append(out, '\n')
+			}
+			changed = true
+			continue
+		}
+		out = append(out, line...)
+		out = append(out, '\n')
+	}
+	if !changed {
+		return "", fmt.Errorf("no concatenated event journal lines found")
+	}
+	if err := os.WriteFile(p, out, 0o644); err != nil {
+		return "", err
+	}
+	return "fixed", nil
+}
+
 // purgeOrphanedEvents removes all event journal lines that reference the given
 // task ID. This is a destructive operation — it rewrites events.jsonl without
 // the orphaned lines. The caller must hold the ledger lock.

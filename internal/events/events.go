@@ -29,6 +29,10 @@ func Append(ledger string, e Event) error {
 		e.Time = time.Now().UTC().Truncate(time.Second)
 	}
 	p := filepath.Join(ledger, repo.EventsJournal)
+	needsSeparator, err := journalNeedsSeparator(p)
+	if err != nil {
+		return err
+	}
 	f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		return err
@@ -38,10 +42,38 @@ func Append(ledger string, e Event) error {
 	if err != nil {
 		return err
 	}
+	if needsSeparator {
+		if _, err := f.Write([]byte{'\n'}); err != nil {
+			return err
+		}
+	}
 	if _, err := f.Write(append(data, '\n')); err != nil {
 		return err
 	}
 	return nil
+}
+
+func journalNeedsSeparator(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	if info.Size() == 0 {
+		return false, nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	last := []byte{0}
+	if _, err := f.ReadAt(last, info.Size()-1); err != nil {
+		return false, err
+	}
+	return last[0] != '\n', nil
 }
 
 // ReadAll reads every event from the ledger journal in append order.

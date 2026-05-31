@@ -1,6 +1,7 @@
 package doctor
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -292,6 +293,87 @@ func TestOrphanedEventDetected(t *testing.T) {
 	d := findFor(diags, CategoryEvents, "task-ghost")
 	if d == nil || d.Severity != SeverityWarning || !d.Fixable {
 		t.Fatalf("expected fixable events warning for orphaned event, got %+v", d)
+	}
+}
+
+func TestConcatenatedEventJournalLineIsFixable(t *testing.T) {
+	ledger := newLedger(t)
+	writeTask(t, ledger, "task-abc.md", cleanTask("task-abc"))
+	writeTask(t, ledger, "task-def.md", cleanTask("task-def"))
+	journal := filepath.Join(ledger, repo.EventsJournal)
+	line := `{"time":"2026-01-01T00:00:00Z","event":"created","task_id":"task-abc","actor":"human"}` +
+		`{"time":"2026-01-01T00:00:01Z","event":"created","task_id":"task-def","actor":"human"}` + "\n"
+	if err := os.WriteFile(journal, []byte(line), 0o644); err != nil {
+		t.Fatalf("write journal: %v", err)
+	}
+
+	diags, err := Diagnose(ledger)
+	if err != nil {
+		t.Fatalf("Diagnose: %v", err)
+	}
+	var d *Diagnostic
+	for i := range diags {
+		if diags[i].Category == CategoryEvents && strings.Contains(diags[i].Message, "concatenated JSON objects") {
+			d = &diags[i]
+			break
+		}
+	}
+	if d == nil || d.Severity != SeverityError || !d.Fixable {
+		t.Fatalf("expected fixable events error for concatenated journal line, got %+v", diags)
+	}
+
+	applied, unfixable, err := Fix(ledger, false)
+	if err != nil {
+		t.Fatalf("Fix: %v", err)
+	}
+	if len(unfixable) != 0 {
+		t.Fatalf("expected no unfixable diagnostics, got %+v", unfixable)
+	}
+	if len(applied) != 1 || applied[0].Verb != "fixed" || applied[0].Diagnostic.Category != CategoryEvents {
+		t.Fatalf("expected one fixed events repair, got %+v", applied)
+	}
+
+	data, err := os.ReadFile(journal)
+	if err != nil {
+		t.Fatalf("read journal after fix: %v", err)
+	}
+	if !strings.HasSuffix(string(data), "\n") {
+		t.Fatalf("expected fixed journal to end with a newline, got:\n%s", data)
+	}
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("expected concatenated events to be split into 2 lines, got %d:\n%s", len(lines), data)
+	}
+	for _, line := range lines {
+		if !json.Valid([]byte(line)) {
+			t.Fatalf("fixed journal line is not valid JSON: %s", line)
+		}
+	}
+	diags2, err := Diagnose(ledger)
+	if err != nil {
+		t.Fatalf("Diagnose after fix: %v", err)
+	}
+	for _, d := range diags2 {
+		if d.Category == CategoryEvents && strings.Contains(d.Message, "concatenated JSON objects") {
+			t.Fatalf("concatenated event diagnostic remained after fix: %+v", diags2)
+		}
+	}
+}
+
+func TestMalformedEventJournalLineIsReported(t *testing.T) {
+	ledger := newLedger(t)
+	writeTask(t, ledger, "task-abc.md", cleanTask("task-abc"))
+	journal := filepath.Join(ledger, repo.EventsJournal)
+	if err := os.WriteFile(journal, []byte("{not-json}\n"), 0o644); err != nil {
+		t.Fatalf("write journal: %v", err)
+	}
+
+	diags, err := Diagnose(ledger)
+	if err != nil {
+		t.Fatalf("Diagnose: %v", err)
+	}
+	if len(diags) != 1 || diags[0].Category != CategoryEvents || diags[0].Severity != SeverityError || diags[0].Fixable {
+		t.Fatalf("expected one non-fixable events error for malformed journal line, got %+v", diags)
 	}
 }
 

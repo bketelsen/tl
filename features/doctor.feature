@@ -88,6 +88,11 @@ Feature: Diagnose ledger integrity
     When the developer runs `tl doctor`
     Then the doctor reports an "events" issue for "task-ghost" with severity "warning"
 
+  Scenario: Concatenated event journal objects are detected
+    Given a journal line contains two concatenated events
+    When the developer runs `tl doctor`
+    Then the doctor reports an "events" issue with severity "error"
+
   # -------------------------------------------------------------------------
   # Claims — claim state inconsistent with task status. Severity varies:
   #   error   — status/claim disagree such that commands will misbehave
@@ -232,6 +237,12 @@ Feature: Diagnose ledger integrity
     When the developer runs `tl doctor --fix`
     Then the doctor reports the stale claim as released
     And "task-abc" has status "open"
+
+  Scenario: --fix splits concatenated event journal objects into separate lines
+    Given a journal line contains two concatenated events
+    When the developer runs `tl doctor --fix`
+    Then the doctor reports the event journal as fixed
+    And the event journal has one event per line
 
   Scenario: --fix does not attempt to repair unfixable issues
     Given a task file "task-bad.md" whose content is not valid YAML
