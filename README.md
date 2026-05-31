@@ -192,7 +192,7 @@ tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
 tl doctor [--json] [--fix] [--force] # scan ledger for integrity issues (optionally repair)
-tl agents [--write-files] [--compact] # print or install agent workflow guide
+tl agents [--write-files [--dry-run]] [--compact] # print or install agent workflow guide
 
 #Exit Codes:
 `0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed

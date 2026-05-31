@@ -1,11 +1,11 @@
 ---
 id: task-609
 title: Add tl agents --dry-run flag for --write-files
-status: open
+status: done
 priority: medium
 type: feature
 created_at: 2026-05-30T18:24:20Z
-updated_at: 2026-05-30T18:24:20Z
+updated_at: 2026-05-31T09:50:30Z
 created_by: human
 assignee: null
 depends_on: []
@@ -37,3 +37,7 @@ Implementation notes:
 - Extract file-scanning into a helper that returns a list of (path, action string) pairs.
 - The existing updateAgentInstructionFiles() function calls that helper and then acts on it.
 - Add feature scenarios in features/agents.feature for: dry-run with existing files, dry-run with no files, dry-run without --write-files (error).
+
+## Notes
+
+- 2026-05-31T09:50:30Z [pi] note: Implemented tl agents --dry-run for --write-files: added flag validation, reusable file scan plan, dry-run messages for managed block/append/skipped files, BDD coverage for existing files/no files/missing --write-files, and README/docs usage mentions. Validation: gofmt, go test ./cmd -run Agents -v, make bdd, make test passed.

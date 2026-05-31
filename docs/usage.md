@@ -290,7 +290,9 @@ $ tl doctor --fix --force              # include destructive repairs
 output into `AGENTS.md` or an agent's context so it knows the claim/note/close
 discipline without being told each time. The generated snippet uses explicit
 `--actor agent-name` examples, highlights handoff reads (`show` + `history`),
-and reminds agents to inspect task references before editing.
+and reminds agents to inspect task references before editing. Use
+`tl agents --write-files --dry-run` to preview which instruction files would be
+updated or skipped without modifying them.
 
 ```sh
 $ tl agents | head -3

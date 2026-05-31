@@ -49,6 +49,37 @@ Feature: Print recommended agent instructions
     And the file "GEMINI.md" does not exist
     And the output contains "No existing agent instruction files found"
 
+  Scenario: Running agents with dry-run reports existing and skipped files without modifying them
+    Given the file "AGENTS.md" exists with content:
+      """
+      # My Project
+
+      <!-- BEGIN TL WORKFLOW -->
+      old workflow text
+      <!-- END TL WORKFLOW -->
+      """
+    And the file "CLAUDE.md" exists with content "# Claude Notes"
+    When the developer runs `tl agents --write-files --dry-run`
+    Then the output contains "Would update AGENTS.md (managed block found)"
+    And the output contains "Would update CLAUDE.md (no managed block yet, would append)"
+    And the output contains "Would skip GEMINI.md (file not found)"
+    And the file "AGENTS.md" contains "old workflow text"
+    And the file "CLAUDE.md" still has content "# Claude Notes"
+
+  Scenario: Running agents with dry-run and no instruction files reports skips
+    When the developer runs `tl agents --write-files --dry-run`
+    Then the output contains "Would skip AGENTS.md (file not found)"
+    And the output contains "Would skip CLAUDE.md (file not found)"
+    And the output contains "Would skip GEMINI.md (file not found)"
+    And the file "AGENTS.md" does not exist
+    And the file "CLAUDE.md" does not exist
+    And the file "GEMINI.md" does not exist
+
+  Scenario: Running agents with dry-run but without write-files is rejected
+    When the developer runs `tl agents --dry-run`
+    Then the command exits with code 2
+    And the output contains "--dry-run requires --write-files"
+
   Scenario: Running agents with deprecated update alias still writes files
     Given the file "AGENTS.md" exists with content "# My Project"
     When the developer runs `tl agents --update`
