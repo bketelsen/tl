@@ -79,8 +79,9 @@ Re-exported types (aliases): `Task`, `Claim`, `Pending`, `Note`, `ParsedBody`,
 
 Re-exported functions: `LedgerDir`, `NewID`, `NormalizeID`, `TaskPath`, `Read`,
 `Write`, `List`, `AppendEvent`, `ReadEvents`, `IsReady`, `CheckDeps`,
-`SetDescription`, `AppendNote`, `ParseBody`. Error sentinels: `ErrLedgerNotFound`,
-`ErrTaskNotFound`.
+`SetDescription`, `AppendNote`, `ParseBody`, `AcquireLock`, `AcquireLockWithTimeout`.
+Error sentinels: `ErrLedgerNotFound`, `ErrTaskNotFound`. Consts: `LockFile`,
+`DefaultLockTimeout`.
 
 `sdk/sdk_test.go` is an external-style (`package sdk_test`) contract test that
 drives create -> ready -> dep-gate -> claim -> close -> audit/list entirely
@@ -99,7 +100,12 @@ through `sdk`, with no `internal/` access — the guarantee external consumers b
 ## Concurrency note for SDK consumers
 
 The `tl` CLI guards mutating commands with an advisory file lock
-(`internal/lock`, `gofrs/flock`). An SDK consumer that writes the ledger
-concurrently with the CLI (or another agent) should acquire the same lock to
-avoid write races. `internal/lock` is currently private; if a consumer needs
-coordinated writes, promote a locking helper into the SDK (future work).
+(`internal/lock`, `gofrs/flock`) at `<ledger>/.lock`. An SDK consumer that
+writes the ledger concurrently with the CLI (or another agent) MUST hold this
+same lock around its own read-modify-write, or the two can clobber each other.
+The SDK exposes it: `sdk.AcquireLock(ledger)` / `sdk.AcquireLockWithTimeout` (and
+`sdk.LockFile`, `sdk.DefaultLockTimeout`) re-export the same primitive and lock
+the same file the CLI does, so SDK and CLI writers coordinate. Read-only SDK use
+(`Read`/`List`/`IsReady`/`CheckDeps`/`ReadEvents`) does not require the lock —
+`Write` is atomic (temp-file+rename), so a torn read cannot occur; the lock only
+serializes writers. `sdk/lock_test.go` proves exclusion and the shared lock path.
