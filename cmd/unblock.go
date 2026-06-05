@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/aholbreich/tl/internal/events"
-	"github.com/aholbreich/tl/internal/store"
+	"github.com/bketelsen/tl/internal/events"
+	"github.com/bketelsen/tl/internal/store"
 )
 
 func newUnblockCmd() *cobra.Command {

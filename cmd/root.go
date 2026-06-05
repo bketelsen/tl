@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	internalcolor "github.com/aholbreich/tl/internal/color"
+	internalcolor "github.com/bketelsen/tl/internal/color"
 )
 
 var rootVersion = "dev"

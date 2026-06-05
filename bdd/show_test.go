@@ -10,8 +10,8 @@ import (
 
 	"github.com/cucumber/godog"
 
-	internalcolor "github.com/aholbreich/tl/internal/color"
-	"github.com/aholbreich/tl/internal/task"
+	internalcolor "github.com/bketelsen/tl/internal/color"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 // --- show.feature support -------------------------------------------------

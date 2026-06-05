@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/aholbreich/tl/internal/store"
+	"github.com/bketelsen/tl/internal/store"
 )
 
 // completionDirective is the directive shared across completion paths.

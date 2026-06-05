@@ -22,10 +22,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aholbreich/tl/internal/events"
-	"github.com/aholbreich/tl/internal/repo"
-	"github.com/aholbreich/tl/internal/store"
-	"github.com/aholbreich/tl/internal/task"
+	"github.com/bketelsen/tl/internal/events"
+	"github.com/bketelsen/tl/internal/repo"
+	"github.com/bketelsen/tl/internal/store"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 // Severities.

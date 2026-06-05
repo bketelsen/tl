@@ -7,7 +7,7 @@ import (
 
 	"github.com/cucumber/godog"
 
-	"github.com/aholbreich/tl/cmd"
+	"github.com/bketelsen/tl/cmd"
 )
 
 // --- actor.feature support ------------------------------------------------

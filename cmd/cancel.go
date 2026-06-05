@@ -8,9 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/aholbreich/tl/internal/events"
-	"github.com/aholbreich/tl/internal/store"
-	"github.com/aholbreich/tl/internal/task"
+	"github.com/bketelsen/tl/internal/events"
+	"github.com/bketelsen/tl/internal/store"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 func newCancelCmd() *cobra.Command {

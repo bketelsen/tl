@@ -12,8 +12,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aholbreich/tl/internal/repo"
-	"github.com/aholbreich/tl/internal/task"
+	"github.com/bketelsen/tl/internal/repo"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 const (

@@ -1,4 +1,4 @@
-module github.com/aholbreich/tl
+module github.com/bketelsen/tl
 
 go 1.25.9
 

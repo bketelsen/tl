@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aholbreich/tl/internal/repo"
+	"github.com/bketelsen/tl/internal/repo"
 )
 
 // newLedger creates an initialized ledger in a temp dir and returns its path.

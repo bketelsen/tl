@@ -8,10 +8,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/aholbreich/tl/internal/events"
-	"github.com/aholbreich/tl/internal/repo"
-	"github.com/aholbreich/tl/internal/store"
-	"github.com/aholbreich/tl/internal/task"
+	"github.com/bketelsen/tl/internal/events"
+	"github.com/bketelsen/tl/internal/ready"
+	"github.com/bketelsen/tl/internal/repo"
+	"github.com/bketelsen/tl/internal/store"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 func newClaimCmd() *cobra.Command {
@@ -90,7 +91,14 @@ func newClaimCmd() *cobra.Command {
 
 			// All dependencies must be done (unless --force).
 			if !force {
-				if err := checkDeps(ledger, t); err != nil {
+				if err := ready.CheckDeps(ledger, t); err != nil {
+					// Translate the typed dependency error to the CLI's exit
+					// codes; missing dep keeps the original plain-error (exit 1)
+					// behavior, not-done dep is exit 4.
+					var de *ready.DepError
+					if errors.As(err, &de) && !de.Missing {
+						return NewExitError(4, "%s", de.Error())
+					}
 					return err
 				}
 			}
@@ -103,23 +111,6 @@ func newClaimCmd() *cobra.Command {
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	c.Flags().BoolVar(&force, "force", false, "Force claim even when another actor holds an active claim")
 	return c
-}
-
-// checkDeps verifies every dependency of t has status "done".
-func checkDeps(ledger string, t *task.Task) error {
-	for _, depID := range t.DependsOn {
-		dep, err := store.Read(ledger, depID)
-		if errors.Is(err, store.ErrTaskNotFound) {
-			return fmt.Errorf("task %s depends on %s which does not exist", t.ID, depID)
-		}
-		if err != nil {
-			return err
-		}
-		if dep.Status != "done" {
-			return NewExitError(4, "task %s is not ready: dependency %s is not done (status %s)", t.ID, depID, dep.Status)
-		}
-	}
-	return nil
 }
 
 // claimTask sets the claim on t and writes it.

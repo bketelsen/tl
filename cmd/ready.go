@@ -8,8 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/aholbreich/tl/internal/store"
-	"github.com/aholbreich/tl/internal/task"
+	tlready "github.com/bketelsen/tl/internal/ready"
+	"github.com/bketelsen/tl/internal/store"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 func newReadyCmd() *cobra.Command {
@@ -31,7 +32,7 @@ func newReadyCmd() *cobra.Command {
 			now := time.Now().UTC()
 			ready := make([]*task.Task, 0, len(all))
 			for _, t := range all {
-				if !isReady(t, ledger, now) {
+				if !tlready.IsReady(t, ledger, now) {
 					continue
 				}
 				if tag != "" && !taskHasTag(t, tag) {
@@ -57,25 +58,4 @@ func newReadyCmd() *cobra.Command {
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	c.Flags().StringVar(&tag, "tag", "", "Only show tasks carrying this tag")
 	return c
-}
-
-func isReady(t *task.Task, ledger string, now time.Time) bool {
-	// Must be open or in_progress (in_progress is only ready if claim expired).
-	switch t.Status {
-	case "open", "in_progress":
-	default:
-		return false // blocked, pending_human, done, cancelled
-	}
-	// Must not have an active claim (actor set and not expired).
-	if t.Claim.Actor != nil && t.Claim.ExpiresAt != nil && t.Claim.ExpiresAt.After(now) {
-		return false
-	}
-	// All dependencies must be done.
-	for _, depID := range t.DependsOn {
-		dep, err := store.Read(ledger, depID)
-		if err != nil || dep.Status != "done" {
-			return false
-		}
-	}
-	return true
 }

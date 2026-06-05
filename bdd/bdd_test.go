@@ -22,9 +22,9 @@ import (
 
 	"github.com/cucumber/godog"
 
-	"github.com/aholbreich/tl/cmd"
-	"github.com/aholbreich/tl/internal/events"
-	"github.com/aholbreich/tl/internal/task"
+	"github.com/bketelsen/tl/cmd"
+	"github.com/bketelsen/tl/internal/events"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 func TestFeatures(t *testing.T) {

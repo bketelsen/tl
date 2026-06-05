@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aholbreich/tl/internal/repo"
+	"github.com/bketelsen/tl/internal/repo"
 )
 
 func TestAppendSeparatesFromJournalWithoutTrailingNewline(t *testing.T) {

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/aholbreich/tl/internal/lock"
+	"github.com/bketelsen/tl/internal/lock"
 )
 
 // acquireLock wraps lock.Acquire so cmd-layer callers see lock contention as

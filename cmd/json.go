@@ -3,7 +3,7 @@ package cmd
 import (
 	"time"
 
-	"github.com/aholbreich/tl/internal/task"
+	"github.com/bketelsen/tl/internal/task"
 )
 
 type compactTaskJSON struct {
