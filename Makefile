@@ -1,6 +1,6 @@
 # tl Makefile — adapted from aholbreich/adr-tool
 BINARY_NAME := tl
-INSTALL_DIR ?= $(HOME)/bin
+INSTALL_DIR ?= $(HOME)/.local/bin
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null || echo dev)
 COMMIT_HASH := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 COUNT := $(shell git rev-list $(VERSION)..HEAD --count 2>/dev/null || echo 0)
