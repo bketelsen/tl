@@ -228,15 +228,19 @@ make build                  # version-stamped local binary
 make test                   # all Go tests
 make bdd                    # godog suite only
 make dists                  # local cross-platform archives for manual testing
-make release VERSION=x.y.z  # validate, tag, and push; GitHub Actions publishes
+make bump                   # verify, tag the next svu version, and push; GitHub Actions publishes
 make clean
 ```
 
 CI runs `gofmt`, `go vet`, `make build`, `make test` on every PR and push to
 `main` (see [`.github/workflows/ci.yaml`](.github/workflows/ci.yaml)).
-`make release VERSION=x.y.z` only verifies that `HEAD` is clean, on `main`, and
-already pushed to `origin/main`, then pushes the tag. The tag-triggered release
-workflow builds all platform archives and publishes the GitHub Release.
+`make bump` runs the same checks as CI (`make build`, `make test`, `gofmt`,
+`go vet`), verifies that `HEAD` is clean, on `main`, and already pushed to
+`origin/main`, then tags HEAD with the next semantic version computed by
+[`svu`](https://github.com/caarlos0/svu) from the conventional-commit history
+and pushes it. Tags are `v`-prefixed (`vX.Y.Z`), as Go modules require. The
+tag-triggered release workflow builds all platform archives and publishes the
+GitHub Release.
 
 ---
 

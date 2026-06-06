@@ -8,7 +8,7 @@ LDFLAGS := -X main.version=$(VERSION)-$(COUNT)-$(COMMIT_HASH)
 
 PLATFORMS = linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64
 
-.PHONY: build test bdd install rpm get-version changelog release amend dists clean cleancache \
+.PHONY: build test bdd install rpm get-version changelog bump amend dists clean cleancache \
 	binary_linux_amd64 binary_linux_arm64 binary_darwin_amd64 binary_darwin_arm64 \
 	binary_windows_amd64 binary_windows_arm64
 
@@ -93,47 +93,54 @@ changelog:
 			} \
 		}'
 
-ifneq ($(filter release,$(MAKECMDGOALS)),)
-ifneq ($(origin VERSION),command line)
-$(error Usage: make release VERSION=x.y.z)
-endif
-endif
-
-# Validate, tag HEAD, and push the tag. GitHub Actions builds archives and publishes the GitHub Release.
-release:
-	@set -e; \
-	printf '%s\n' "$(VERSION)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { \
-		echo "VERSION must look like x.y.z, got '$(VERSION)'" >&2; \
-		exit 2; \
-	}; \
-	if [ -n "$$(git status --porcelain)" ]; then \
-		echo "Working tree is not clean; commit or stash changes before releasing." >&2; \
+# Cut a release: verify, then tag HEAD with the next semver (computed by svu from
+# conventional commits) and push it. GitHub Actions builds archives and publishes
+# the GitHub Release on the tag push.
+#
+# svu always emits a v-prefixed tag (vX.Y.Z), which is REQUIRED for Go modules —
+# consumers (e.g. omnius `require github.com/bketelsen/tl vX.Y.Z`) cannot resolve
+# a bare `X.Y.Z` tag. This replaced an older `make release VERSION=x.y.z` target
+# that produced bare, Go-invisible tags. (Fork note: standardized on the same
+# svu-based `make bump` flow used across the other repos.)
+bump: ## verify, then tag the next svu version and push it
+	@$(MAKE) build
+	@$(MAKE) test
+	@unformatted=$$(gofmt -l .); \
+		if [ -n "$$unformatted" ]; then \
+			echo "These files need gofmt:" >&2; echo "$$unformatted" >&2; exit 1; \
+		fi
+	@go vet ./...
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo "Working tree is not clean; commit or stash changes before bumping." >&2; \
 		exit 1; \
-	fi; \
-	branch=$$(git rev-parse --abbrev-ref HEAD); \
-	if [ "$$branch" != "main" ]; then \
-		echo "Releases must be cut from main; current branch is $$branch." >&2; \
-		exit 1; \
-	fi; \
-	git fetch origin main --tags; \
-	if git rev-parse -q --verify "refs/tags/$(VERSION)" >/dev/null; then \
-		echo "Tag $(VERSION) already exists locally." >&2; \
-		exit 1; \
-	fi; \
-	if git ls-remote --exit-code --tags origin "refs/tags/$(VERSION)" >/dev/null 2>&1; then \
-		echo "Tag $(VERSION) already exists on origin." >&2; \
-		exit 1; \
-	fi; \
-	local_head=$$(git rev-parse HEAD); \
-	remote_head=$$(git rev-parse origin/main); \
-	if [ "$$local_head" != "$$remote_head" ]; then \
-		echo "HEAD ($$local_head) is not pushed to origin/main ($$remote_head). Push main before releasing." >&2; \
-		exit 1; \
-	fi; \
-	go test -v ./...; \
-	git tag -a "$(VERSION)" -m "tl $(VERSION)"; \
-	git push origin "$(VERSION)"; \
-	echo "Pushed tag $(VERSION). GitHub Actions will build archives and publish the GitHub Release."
+	fi
+	@branch=$$(git rev-parse --abbrev-ref HEAD); \
+		if [ "$$branch" != "main" ]; then \
+			echo "Releases must be cut from main; current branch is $$branch." >&2; \
+			exit 1; \
+		fi
+	@git fetch origin main --tags
+	@local_head=$$(git rev-parse HEAD); \
+		remote_head=$$(git rev-parse origin/main); \
+		if [ "$$local_head" != "$$remote_head" ]; then \
+			echo "HEAD ($$local_head) is not pushed to origin/main ($$remote_head). Push main first." >&2; \
+			exit 1; \
+		fi
+	@version=$$(svu next); \
+		current=$$(git describe --tags --abbrev=0 2>/dev/null || echo ""); \
+		if [ "$$version" = "$$current" ]; then \
+			echo "Already at $$current; no conventional commits to release. Nothing to bump." ; \
+			exit 0; \
+		fi; \
+		if git rev-parse -q --verify "refs/tags/$$version" >/dev/null || \
+			git ls-remote --exit-code --tags origin "refs/tags/$$version" >/dev/null 2>&1; then \
+			echo "Tag $$version already exists (local or origin)." >&2; \
+			exit 1; \
+		fi; \
+		echo "Tagging $$version..."; \
+		git tag -a "$$version" -m "tl $$version"; \
+		git push origin "$$version"; \
+		echo "Pushed tag $$version. GitHub Actions will build archives and publish the GitHub Release."
 
 # Amend the last commit with all current changes and force-push. Use with care.
 amend:
